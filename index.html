@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrijsProfeet Status</title>
+<meta name="description" content="Live availability of prijsprofeet.nl (website and API), probed from outside its own infrastructure.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='%232e9e5b'/></svg>">
+</head>
+<body data-page="index">
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <h1>PrijsProfeet Status</h1>
+      <span class="checked" id="checked">Loading…</span>
+    </div>
+  </header>
+
+  <!-- Ships with the "no data" state, not an optimistic green one: if the
+       JSON never arrives, the page must not sit there claiming all is well. -->
+  <div class="banner" id="banner" data-status="none">
+    <span class="dot"></span>
+    <span class="banner-text">Loading status…</span>
+  </div>
+
+  <main id="services"></main>
+
+  <section class="sla" id="sla" hidden>
+    <h2>Maandelijkse beschikbaarheid (Business SLA)</h2>
+    <p class="sla-note">
+      Dit is de contractuele meting — een externe probe op <code>/api/v1/ready</code>,
+      elke 30s, met releasevensters uitgesloten. Zie de
+      <a href="https://prijsprofeet.nl/api-voorwaarden" rel="noopener">API-voorwaarden</a> (art. 9).
+    </p>
+    <table id="sla-table"></table>
+  </section>
+
+  <footer>
+    Checks lopen elke paar minuten vanaf GitHub Actions — buiten het
+    prijsprofeet.nl-netwerk, zodat een storing daar deze pagina niet meesleurt.
+    Elke balk is één UTC-dag over de laatste 31 dagen.
+    <span class="build" id="build"></span>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

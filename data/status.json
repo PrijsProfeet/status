@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-09-11T16:48:55.751991+00:00",
+  "services": {
+    "api": {
+      "detail": "200 OK",
+      "history": [
+        {
+          "date": "2026-09-11",
+          "failed_runs": 0,
+          "first_failure": null,
+          "runs": 2
+        }
+      ],
+      "last_checked": "2026-09-11T16:48:56.275852+00:00",
+      "name": "API",
+      "status": "up",
+      "target": "https://www.prijsprofeet.nl/api/v1/ready"
+    },
+    "website": {
+      "detail": "200 OK",
+      "history": [
+        {
+          "date": "2026-09-11",
+          "failed_runs": 0,
+          "first_failure": null,
+          "runs": 2
+        }
+      ],
+      "last_checked": "2026-09-11T16:48:56.055928+00:00",
+      "name": "Website",
+      "status": "up",
+      "target": "https://www.prijsprofeet.nl/"
+    }
+  },
+  "sla": null
+}
