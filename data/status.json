@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T16:49:48.251313+00:00",
+  "generated_at": "2026-09-11T18:27:52.814279+00:00",
   "services": {
     "api": {
       "detail": "200 OK",
@@ -8,10 +8,10 @@
           "date": "2026-09-11",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 4
+          "runs": 5
         }
       ],
-      "last_checked": "2026-09-11T16:49:50.896991+00:00",
+      "last_checked": "2026-09-11T18:27:54.216096+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -23,14 +23,156 @@
           "date": "2026-09-11",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 4
+          "runs": 5
         }
       ],
-      "last_checked": "2026-09-11T16:49:50.500590+00:00",
+      "last_checked": "2026-09-11T18:27:53.615118+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
     }
   },
-  "sla": null
+  "sla": {
+    "months": [
+      {
+        "availability": 0.9996743095362168,
+        "availability_pct": 99.9674,
+        "closed": false,
+        "downtime_minutes": 5.0,
+        "maintenance_minutes": 275.6,
+        "measured": true,
+        "measured_from": "2026-08-31T22:00:00+00:00",
+        "measured_to": "2026-09-11T18:27:54.714827+00:00",
+        "met": true,
+        "month": "2026-09",
+        "partial": true,
+        "probe": "https://www.prijsprofeet.nl/api/v1/ready",
+        "release_windows": 118,
+        "samples": {
+          "bad": 1,
+          "excluded": 551,
+          "expected": 31255,
+          "good": 30694,
+          "measurable": 30704,
+          "missing": 9
+        },
+        "step_seconds": 30,
+        "target_pct": 99.5
+      },
+      {
+        "availability": 0.9999318917078154,
+        "availability_pct": 99.9932,
+        "closed": true,
+        "downtime_minutes": 9.5,
+        "maintenance_minutes": 592.5,
+        "measured": true,
+        "measured_from": "2026-07-31T22:00:00+00:00",
+        "measured_to": "2026-08-31T22:00:00+00:00",
+        "met": true,
+        "month": "2026-08",
+        "partial": false,
+        "probe": "https://www.prijsprofeet.nl/api/v1/ready",
+        "release_windows": 236,
+        "samples": {
+          "bad": 19,
+          "excluded": 1185,
+          "expected": 89280,
+          "good": 88089,
+          "measurable": 88095,
+          "missing": 0
+        },
+        "step_seconds": 30,
+        "target_pct": 99.5
+      },
+      {
+        "availability": 0.9996155546585165,
+        "availability_pct": 99.9616,
+        "closed": true,
+        "downtime_minutes": 11.5,
+        "maintenance_minutes": 313.5,
+        "measured": true,
+        "measured_from": "2026-07-13T15:15:00+00:00",
+        "measured_to": "2026-07-31T22:00:00+00:00",
+        "met": true,
+        "month": "2026-07",
+        "partial": true,
+        "probe": "https://www.prijsprofeet.nl/api/v1/ready",
+        "release_windows": 128,
+        "samples": {
+          "bad": 23,
+          "excluded": 627,
+          "expected": 52650,
+          "good": 52003,
+          "measurable": 52023,
+          "missing": 0
+        },
+        "step_seconds": 30,
+        "target_pct": 99.5
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2026-06",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2026-05",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2026-04",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2026-03",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2026-02",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2026-01",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2025-12",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2025-11",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      },
+      {
+        "availability": null,
+        "measured": false,
+        "met": null,
+        "month": "2025-10",
+        "note": "not measured \u2014 the SLA probe went live on 2026-07-13"
+      }
+    ],
+    "target_pct": 99.5
+  }
 }
