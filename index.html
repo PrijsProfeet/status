@@ -28,6 +28,16 @@
 
   <main id="services"></main>
 
+  <section class="incidents" id="incidents" hidden>
+    <h2>Incidenten</h2>
+    <p class="incidents-note">
+      Geopend na twee opeenvolgende mislukte checks (~10 min), zodat een enkele
+      timeout geen "incident" is. Dekt alleen wat deze probe zelf ziet
+      (bereikbaarheid van de site en de API) — niet elk intern alarm.
+    </p>
+    <ul id="incidents-list"></ul>
+  </section>
+
   <section class="sla" id="sla" hidden>
     <h2>Maandelijkse beschikbaarheid (Business SLA)</h2>
     <p class="sla-note">

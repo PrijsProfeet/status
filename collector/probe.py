@@ -36,6 +36,21 @@ USER_AGENT = "prijsprofeet-status/1.0 (+https://github.com/PrijsProfeet/status)"
 # never make the strip appear to lose a day it actually has data for.
 HISTORY_DAYS = 45
 
+# Consecutive failed checks before a blip becomes a reported incident (see
+# #954). At a 5-minute cadence this is ~10 minutes down — long enough that a
+# single transient timeout doesn't open (and immediately close) an "incident"
+# on every network hiccup, short enough that a real outage is still caught
+# well inside its own window. This only ever sees what THIS probe checks
+# (reachability of / and /api/v1/ready) — it has no view of the internal
+# Prometheus alerts (EANCoverageDrop, ForecastMiscalibrated, ...); wiring
+# those in is the Alertmanager-bridge half of #954, deliberately not built
+# here (would need a new credential on the box for no clear benefit yet).
+INCIDENT_THRESHOLD = 2
+
+# Keep a long tail of resolved incidents so a visitor can see the track
+# record, not just what's happening right now.
+INCIDENT_HISTORY_DAYS = 180
+
 
 @dataclass
 class CheckResult:
@@ -110,15 +125,86 @@ def _today_utc() -> str:
 
 def _load() -> dict[str, Any]:
     if DATA_FILE.exists():
-        return json.loads(DATA_FILE.read_text())
-    return {"generated_at": None, "services": {}, "sla": None}
+        data = json.loads(DATA_FILE.read_text())
+    else:
+        data = {"generated_at": None, "services": {}, "sla": None}
+    data.setdefault("incidents", [])
+    return data
+
+
+def _update_incidents(
+    data: dict[str, Any], key: str, name: str, result: CheckResult, checked_at: str
+) -> None:
+    """Open an incident after INCIDENT_THRESHOLD consecutive failures on this
+    service, and close it on the first success afterwards.
+
+    `consecutive_failures` lives on the service dict so it survives between
+    runs (each run is a fresh process); the incident itself is a separate,
+    append-only list so a resolved incident's start time never gets rewritten
+    by a later run touching the same service.
+    """
+    service = data["services"][key]
+    streak = service.get("consecutive_failures", 0)
+
+    if result.ok:
+        if streak >= INCIDENT_THRESHOLD:
+            ongoing = next(
+                (
+                    i
+                    for i in data["incidents"]
+                    if i["service"] == key and i["resolved_at"] is None
+                ),
+                None,
+            )
+            if ongoing is not None:
+                ongoing["resolved_at"] = checked_at
+        service["consecutive_failures"] = 0
+        return
+
+    streak += 1
+    service["consecutive_failures"] = streak
+
+    if streak == INCIDENT_THRESHOLD:
+        data["incidents"].append(
+            {
+                "service": key,
+                "name": name,
+                "started_at": checked_at,
+                "resolved_at": None,
+                "detail": result.detail,
+            }
+        )
+    elif streak > INCIDENT_THRESHOLD:
+        ongoing = next(
+            (
+                i
+                for i in data["incidents"]
+                if i["service"] == key and i["resolved_at"] is None
+            ),
+            None,
+        )
+        if ongoing is not None:
+            ongoing["detail"] = result.detail  # keep the latest failure reason
+
+
+def _prune_incidents(data: dict[str, Any]) -> None:
+    cutoff = datetime.now(timezone.utc) - timedelta(days=INCIDENT_HISTORY_DAYS)
+    data["incidents"] = [
+        i
+        for i in data["incidents"]
+        # Never drop an incident that's still open, however old it started —
+        # dropping it would silently "resolve" an ongoing outage by omission.
+        if i["resolved_at"] is None
+        or datetime.fromisoformat(i["started_at"]) >= cutoff
+    ]
+    data["incidents"].sort(key=lambda i: i["started_at"], reverse=True)
 
 
 def _update_service(
     data: dict[str, Any], key: str, name: str, target: str, result: CheckResult
 ) -> None:
     service = data["services"].setdefault(
-        key, {"name": name, "target": target, "history": []}
+        key, {"name": name, "target": target, "history": [], "consecutive_failures": 0}
     )
     service["name"] = name
     service["target"] = target
@@ -146,6 +232,8 @@ def _update_service(
     service["history"] = [d for d in history if d["date"] >= cutoff]
     service["history"].sort(key=lambda d: d["date"])
 
+    _update_incidents(data, key, name, result, service["last_checked"])
+
 
 def main() -> int:
     base_url = "https://www.prijsprofeet.nl"
@@ -162,6 +250,8 @@ def main() -> int:
         data["sla"] = sla
     # else: keep whatever was last written — a fetch hiccup must not blank
     # months of persisted SLA history off the page.
+
+    _prune_incidents(data)
 
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     DATA_FILE.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")

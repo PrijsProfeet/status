@@ -202,6 +202,60 @@ function renderSla(sla) {
   }
 }
 
+function formatDuration(ms) {
+  const mins = Math.round(ms / 60000);
+  if (mins < 1) return 'minder dan een minuut';
+  if (mins < 60) return `${mins} min`;
+  const hrs = Math.floor(mins / 60);
+  const rest = mins % 60;
+  return rest ? `${hrs} u ${rest} min` : `${hrs} u`;
+}
+
+function formatDateTime(iso) {
+  return new Date(iso).toLocaleString('nl-NL', {
+    timeZone: 'Europe/Amsterdam',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function renderIncidents(incidents) {
+  const section = document.getElementById('incidents');
+  const list = (incidents || []).slice(0, 20);
+  if (!list.length) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+
+  const ul = document.getElementById('incidents-list');
+  ul.innerHTML = '';
+  for (const incident of list) {
+    const li = el('li', 'incident');
+    const ongoing = incident.resolved_at === null;
+    li.dataset.ongoing = String(ongoing);
+
+    const head = el('div', 'incident-head');
+    head.appendChild(document.createTextNode(incident.name || incident.service));
+    if (ongoing) head.appendChild(el('span', null, 'Lopend'));
+    li.appendChild(head);
+
+    const start = formatDateTime(incident.started_at);
+    const duration = ongoing
+      ? `sinds ${start}`
+      : `${start}, duurde ${formatDuration(
+          new Date(incident.resolved_at) - new Date(incident.started_at),
+        )}`;
+    li.appendChild(el('div', 'incident-meta', `${duration}${
+      incident.detail ? ` — ${incident.detail}` : ''
+    }`));
+
+    ul.appendChild(li);
+  }
+}
+
 async function render() {
   let data;
   try {
@@ -228,6 +282,7 @@ async function render() {
     main.appendChild(renderService(data.services[key]));
   }
 
+  renderIncidents(data.incidents);
   renderSla(data.sla);
 }
 

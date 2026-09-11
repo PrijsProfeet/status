@@ -152,6 +152,41 @@ header { margin-bottom: 16px; }
 
 .uptime { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
 
+.incidents { margin-top: 24px; }
+.incidents h2 { font-size: 1.05rem; }
+.incidents-note { color: var(--text-dim); font-size: 0.85rem; }
+
+#incidents-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.incident {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--down);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.incident[data-ongoing="true"] { border-left-color: var(--degraded); }
+
+.incident-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.incident-meta {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
 .sla { margin-top: 24px; }
 .sla h2 { font-size: 1.05rem; }
 .sla-note { color: var(--text-dim); font-size: 0.85rem; }
