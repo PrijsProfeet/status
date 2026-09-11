@@ -161,7 +161,11 @@ function renderBanner(services) {
 
 function renderSla(sla) {
   const section = document.getElementById('sla');
-  if (!sla || !sla.months || !sla.months.length) {
+  // Months before the probe existed (`measured: false`) will never carry a
+  // number — that isn't "not yet", it's permanent, so they're dropped rather
+  // than shown as a wall of "nog niet gemeten" rows that never resolve.
+  const months = ((sla && sla.months) || []).filter((m) => m.measured);
+  if (!months.length) {
     section.hidden = true;
     return;
   }
@@ -176,13 +180,17 @@ function renderSla(sla) {
     head.appendChild(th);
   });
 
-  for (const m of sla.months) {
+  for (const m of months) {
     const row = table.insertRow();
     row.insertCell().textContent = m.month;
     row.insertCell().textContent =
       m.availability_pct != null ? `${m.availability_pct}%` : 'nog niet gemeten';
     const verdict = row.insertCell();
-    if (m.met === true) {
+    // A running month's `met` can still flip before it closes — reporting
+    // "gehaald" on it would claim a verdict the month hasn't earned yet.
+    if (!m.closed) {
+      verdict.textContent = 'loopt nog';
+    } else if (m.met === true) {
       verdict.textContent = 'gehaald';
       verdict.className = 'met';
     } else if (m.met === false) {
