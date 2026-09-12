@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T23:33:26.437257+00:00",
+  "generated_at": "2026-09-12T01:29:01.572755+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -11,9 +11,15 @@
           "failed_runs": 0,
           "first_failure": null,
           "runs": 11
+        },
+        {
+          "date": "2026-09-12",
+          "failed_runs": 0,
+          "first_failure": null,
+          "runs": 1
         }
       ],
-      "last_checked": "2026-09-11T23:33:27.965644+00:00",
+      "last_checked": "2026-09-12T01:29:05.821328+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -27,9 +33,15 @@
           "failed_runs": 0,
           "first_failure": null,
           "runs": 11
+        },
+        {
+          "date": "2026-09-12",
+          "failed_runs": 0,
+          "first_failure": null,
+          "runs": 1
         }
       ],
-      "last_checked": "2026-09-11T23:33:27.362716+00:00",
+      "last_checked": "2026-09-12T01:29:05.595351+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -38,14 +50,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9996805928197265,
-        "availability_pct": 99.9681,
+        "availability": 0.9996512365250475,
+        "availability_pct": 99.9651,
         "closed": false,
-        "downtime_minutes": 5.0,
+        "downtime_minutes": 5.5,
         "maintenance_minutes": 279.0,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-11T23:33:28.119326+00:00",
+        "measured_to": "2026-09-12T01:29:06.330533+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -54,10 +66,10 @@
         "samples": {
           "bad": 1,
           "excluded": 558,
-          "expected": 31866,
-          "good": 31298,
-          "measurable": 31308,
-          "missing": 9
+          "expected": 32098,
+          "good": 31529,
+          "measurable": 31540,
+          "missing": 10
         },
         "step_seconds": 30,
         "target_pct": 99.5
