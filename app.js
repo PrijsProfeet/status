@@ -6,6 +6,19 @@
 
 const WINDOW_DAYS = 31;
 
+// The collector commits new data roughly every 5 minutes; polling faster
+// than that only spends the visitor's battery and GitHub Pages' bandwidth
+// on refetching a file that hasn't changed. Polling slower would mean a
+// visitor who leaves the tab open during an outage sits on a stale "All
+// systems operational" for longer than the collector itself needed.
+const POLL_INTERVAL_MS = 60_000;
+// The "Updated N minutes ago" line goes stale even between polls; refreshing
+// just that text needs no network call at all.
+const CLOCK_TICK_MS = 15_000;
+
+let lastData = null;
+let lastFetchedAt = 0;
+
 const STATUS_TEXT = {
   up: 'Operational',
   degraded: 'Degraded',
@@ -256,15 +269,7 @@ function renderIncidents(incidents) {
   }
 }
 
-async function render() {
-  let data;
-  try {
-    data = await getJSON('data/status.json');
-  } catch (err) {
-    document.getElementById('checked').textContent = 'Could not load status data';
-    return;
-  }
-
+function renderData(data) {
   document.getElementById('checked').textContent = `Updated ${ago(data.generated_at)}`;
   document.getElementById('build').textContent = data.generated_at
     ? `Last probe run: ${new Date(data.generated_at).toISOString()}`
@@ -286,4 +291,45 @@ async function render() {
   renderSla(data.sla);
 }
 
-render();
+/* Re-renders the "Updated N ago" line between polls, without a network
+ * call — so the page doesn't need a fresh fetch just to stop lying about
+ * how old the data on screen is. */
+function tickClock() {
+  if (!lastData) return;
+  document.getElementById('checked').textContent = `Updated ${ago(lastData.generated_at)}`;
+}
+
+async function refresh() {
+  try {
+    const data = await getJSON('data/status.json');
+    lastData = data;
+    lastFetchedAt = Date.now();
+    renderData(data);
+  } catch (err) {
+    // Leave whatever last rendered successfully on screen — replacing a
+    // real (if slightly stale) status with "could not load" on a single
+    // failed poll would be a worse answer than the one already showing.
+    if (!lastData) {
+      document.getElementById('checked').textContent = 'Could not load status data';
+    }
+  }
+}
+
+function startPolling() {
+  refresh();
+  setInterval(tickClock, CLOCK_TICK_MS);
+  setInterval(() => {
+    if (document.visibilityState === 'visible') refresh();
+  }, POLL_INTERVAL_MS);
+
+  // A tab left in the background for a while is showing data far older than
+  // POLL_INTERVAL_MS by the time it's looked at again — catch up the moment
+  // it becomes visible instead of waiting for the next tick.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - lastFetchedAt > POLL_INTERVAL_MS) {
+      refresh();
+    }
+  });
+}
+
+startPolling();
