@@ -12,8 +12,10 @@ from datetime import datetime, timedelta, timezone
 from probe import (
     INCIDENT_HISTORY_DAYS,
     INCIDENT_THRESHOLD,
+    STALL_THRESHOLD_MINUTES,
     CheckResult,
     _prune_incidents,
+    _stall_minutes,
     _update_service,
 )
 
@@ -135,6 +137,27 @@ class TestPruning(unittest.TestCase):
             [i["started_at"] for i in data["incidents"]],
             sorted((i["started_at"] for i in data["incidents"]), reverse=True),
         )
+
+
+class TestStallDetection(unittest.TestCase):
+    """#973: a GitHub Actions job stuck in `queued` blocked every dispatch
+    behind it for 90+ minutes with nothing failing loudly. probe.py now
+    detects that its own previous write is too old and fails the run (after
+    still writing fresh data) so GitHub notifies watchers of the repo."""
+
+    def test_no_previous_run_is_not_a_stall(self):
+        now = datetime.now(timezone.utc)
+        self.assertIsNone(_stall_minutes(None, now))
+
+    def test_a_recent_previous_run_is_not_a_stall(self):
+        now = datetime.now(timezone.utc)
+        previous = (now - timedelta(minutes=5)).isoformat()
+        self.assertLess(_stall_minutes(previous, now), STALL_THRESHOLD_MINUTES)
+
+    def test_a_gap_past_the_threshold_is_a_stall(self):
+        now = datetime.now(timezone.utc)
+        previous = (now - timedelta(minutes=STALL_THRESHOLD_MINUTES + 1)).isoformat()
+        self.assertGreater(_stall_minutes(previous, now), STALL_THRESHOLD_MINUTES)
 
 
 if __name__ == "__main__":

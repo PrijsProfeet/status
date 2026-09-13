@@ -51,6 +51,14 @@ INCIDENT_THRESHOLD = 2
 # record, not just what's happening right now.
 INCIDENT_HISTORY_DAYS = 180
 
+# How long since the previous successful write before the PIPELINE itself
+# (not the site) counts as stalled (#973). At a 5-minute cadence a healthy
+# run's generated_at is always a few minutes old at most; a bigger gap means
+# our own probe stopped running — e.g. a GitHub Actions job stuck in `queued`
+# for 90+ minutes with nothing failing loudly about it. 3x the cadence
+# tolerates one slow or skipped run without crying wolf.
+STALL_THRESHOLD_MINUTES = 15
+
 
 @dataclass
 class CheckResult:
@@ -117,6 +125,15 @@ def fetch_sla_summary(base_url: str) -> Optional[dict[str, Any]]:
         return json.loads(body)
     except json.JSONDecodeError:
         return None
+
+
+def _stall_minutes(previous_generated_at: Optional[str], now: datetime) -> Optional[float]:
+    """Minutes since the last successful run, or None on the very first run
+    ever (no previous data to compare against — not a stall)."""
+    if not previous_generated_at:
+        return None
+    previous = datetime.fromisoformat(previous_generated_at)
+    return (now - previous).total_seconds() / 60
 
 
 def _today_utc() -> str:
@@ -238,7 +255,9 @@ def _update_service(
 def main() -> int:
     base_url = "https://www.prijsprofeet.nl"
     data = _load()
-    data["generated_at"] = datetime.now(timezone.utc).isoformat()
+    previous_generated_at = data.get("generated_at")
+    now = datetime.now(timezone.utc)
+    data["generated_at"] = now.isoformat()
 
     _update_service(data, "website", "Website", base_url + "/", check_website(base_url))
     _update_service(
@@ -263,7 +282,21 @@ def main() -> int:
         print(f"DOWN: {', '.join(failures)}", file=sys.stderr)
     else:
         print("all services up")
-    return 0  # never fail the workflow on a real outage — that's the point
+
+    stall = _stall_minutes(previous_generated_at, now)
+    if stall is not None and stall > STALL_THRESHOLD_MINUTES:
+        print(
+            f"STALLED PIPELINE: {stall:.0f} min since the last successful run "
+            f"(threshold {STALL_THRESHOLD_MINUTES}) — this run's data was "
+            "still written above; failing only to surface the gap (#973).",
+            file=sys.stderr,
+        )
+        return 1
+
+    return 0  # never fail the workflow on a real SITE outage — that's the
+    # point of this whole script. A stalled PIPELINE (above) is the one and
+    # only thing it does fail on, and it's a different failure entirely: our
+    # own tooling not having run, not prijsprofeet.nl being down.
 
 
 if __name__ == "__main__":
