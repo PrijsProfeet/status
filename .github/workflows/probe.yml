@@ -17,7 +17,15 @@ permissions:
 
 concurrency:
   group: probe
-  cancel-in-progress: false
+  # A stuck run must never be able to block every dispatch behind it. #973:
+  # one job got stuck in GitHub's own `queued` state (never assigned a
+  # runner) for 90+ minutes; with cancel-in-progress:false, every 5-minute
+  # dispatch after it just queued behind it and got auto-cancelled in turn,
+  # so nothing ran at all until someone noticed and cancelled it by hand. A
+  # healthy run finishes in ~10-30s, so cancelling anything still going when
+  # a new dispatch arrives 5 minutes later costs nothing and self-heals this
+  # exact failure mode within one cadence instead of needing a human.
+  cancel-in-progress: true
 
 jobs:
   probe:
@@ -29,7 +37,13 @@ jobs:
         run: python3 -m unittest test_probe -v
         working-directory: collector
 
-      - run: python3 collector/probe.py
+      - name: Run the probe
+        id: probe
+        # Never blocks the commit below — probe.py writes fresh data even
+        # when it flags the pipeline as stalled (see its STALL_THRESHOLD_MINUTES).
+        # The "fail loudly" step further down still fails the job afterwards.
+        continue-on-error: true
+        run: python3 collector/probe.py
 
       - name: Commit updated status
         run: |
@@ -44,3 +58,13 @@ jobs:
             git push && break
             git pull --rebase && git push && break
           done
+
+      - name: Fail loudly on a stalled pipeline
+        # Runs after the commit above, so a stall is still visible on the
+        # page (fresh data got published) while also marking this run red —
+        # which is what makes GitHub email the people watching this repo,
+        # with no new secret or external service needed for that alert.
+        if: steps.probe.outcome == 'failure'
+        run: |
+          echo "::error::probe.py detected a stalled pipeline (see its own log output above). Data was still committed; failing only to surface the gap."
+          exit 1
