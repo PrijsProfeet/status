@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T18:50:26.949518+00:00",
+  "generated_at": "2026-09-14T18:55:20.054477+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -28,10 +28,10 @@
           "date": "2026-09-14",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 229
+          "runs": 230
         }
       ],
-      "last_checked": "2026-09-14T18:50:29.799588+00:00",
+      "last_checked": "2026-09-14T18:55:20.777075+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -62,10 +62,10 @@
           "date": "2026-09-14",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 229
+          "runs": 230
         }
       ],
-      "last_checked": "2026-09-14T18:50:29.177272+00:00",
+      "last_checked": "2026-09-14T18:55:20.610569+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -74,25 +74,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9996942986701992,
+        "availability": 0.999694493240663,
         "availability_pct": 99.9694,
         "closed": false,
         "downtime_minutes": 6.0,
-        "maintenance_minutes": 333.9,
+        "maintenance_minutes": 335.6,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-14T18:40:31.093076+00:00",
+        "measured_to": "2026-09-14T18:55:20.879188+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 151,
+        "release_windows": 152,
         "samples": {
           "bad": 1,
-          "excluded": 667,
-          "expected": 39921,
-          "good": 39242,
-          "measurable": 39254,
+          "excluded": 671,
+          "expected": 39950,
+          "good": 39267,
+          "measurable": 39279,
           "missing": 11
         },
         "step_seconds": 30,
