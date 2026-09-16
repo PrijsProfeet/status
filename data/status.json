@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T23:15:23.653256+00:00",
+  "generated_at": "2026-09-16T23:20:25.056406+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -40,10 +40,10 @@
           "date": "2026-09-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 285
+          "runs": 286
         }
       ],
-      "last_checked": "2026-09-16T23:15:24.651862+00:00",
+      "last_checked": "2026-09-16T23:20:29.641347+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -86,10 +86,10 @@
           "date": "2026-09-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 285
+          "runs": 286
         }
       ],
-      "last_checked": "2026-09-16T23:15:24.197455+00:00",
+      "last_checked": "2026-09-16T23:20:29.197987+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -98,14 +98,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9996700468533468,
+        "availability": 0.9996701919482861,
         "availability_pct": 99.967,
         "closed": false,
         "downtime_minutes": 7.5,
         "maintenance_minutes": 380.4,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-16T23:10:30.235670+00:00",
+        "measured_to": "2026-09-16T23:20:30.060523+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -114,9 +114,9 @@
         "samples": {
           "bad": 2,
           "excluded": 760,
-          "expected": 46221,
-          "good": 45446,
-          "measurable": 45461,
+          "expected": 46241,
+          "good": 45466,
+          "measurable": 45481,
           "missing": 13
         },
         "step_seconds": 30,
