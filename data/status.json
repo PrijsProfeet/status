@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-17T08:35:20.704295+00:00",
+  "generated_at": "2026-09-17T08:40:26.886339+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -46,10 +46,10 @@
           "date": "2026-09-17",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 106
+          "runs": 107
         }
       ],
-      "last_checked": "2026-09-17T08:35:21.435560+00:00",
+      "last_checked": "2026-09-17T08:40:29.484526+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -98,10 +98,10 @@
           "date": "2026-09-17",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 106
+          "runs": 107
         }
       ],
-      "last_checked": "2026-09-17T08:35:21.253310+00:00",
+      "last_checked": "2026-09-17T08:40:29.092372+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -110,25 +110,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997208263539922,
+        "availability": 0.9997209222446438,
         "availability_pct": 99.9721,
         "closed": false,
         "downtime_minutes": 6.5,
-        "maintenance_minutes": 387.5,
+        "maintenance_minutes": 389.3,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-17T08:30:37.210351+00:00",
+        "measured_to": "2026-09-17T08:40:29.567008+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 181,
+        "release_windows": 182,
         "samples": {
           "bad": 2,
-          "excluded": 775,
-          "expected": 47341,
-          "good": 46553,
-          "measurable": 46566,
+          "excluded": 778,
+          "expected": 47360,
+          "good": 46569,
+          "measurable": 46582,
           "missing": 11
         },
         "step_seconds": 30,
