@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T15:45:26.281624+00:00",
+  "generated_at": "2026-09-18T15:50:31.242205+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -52,10 +52,10 @@
           "date": "2026-09-18",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 193
+          "runs": 194
         }
       ],
-      "last_checked": "2026-09-18T15:45:30.039000+00:00",
+      "last_checked": "2026-09-18T15:50:32.192529+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -110,10 +110,10 @@
           "date": "2026-09-18",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 193
+          "runs": 194
         }
       ],
-      "last_checked": "2026-09-18T15:45:29.377151+00:00",
+      "last_checked": "2026-09-18T15:50:31.780530+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -122,25 +122,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997215481920522,
+        "availability": 0.9997216367757585,
         "availability_pct": 99.9722,
         "closed": false,
         "downtime_minutes": 7.0,
-        "maintenance_minutes": 401.6,
+        "maintenance_minutes": 403.6,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-18T15:40:30.495114+00:00",
+        "measured_to": "2026-09-18T15:50:32.523801+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 189,
+        "release_windows": 190,
         "samples": {
           "bad": 2,
-          "excluded": 803,
-          "expected": 51081,
-          "good": 50264,
-          "measurable": 50278,
+          "excluded": 807,
+          "expected": 51101,
+          "good": 50280,
+          "measurable": 50294,
           "missing": 12
         },
         "step_seconds": 30,
