@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-21T15:30:38.011996+00:00",
+  "generated_at": "2026-09-21T15:35:21.647924+00:00",
   "incidents": [],
   "services": {
     "api": {
-      "consecutive_failures": 0,
-      "detail": "200 OK",
+      "consecutive_failures": 1,
+      "detail": "unreachable: <urlopen error [Errno 104] Connection reset by peer>",
       "history": [
         {
           "date": "2026-09-11",
@@ -68,14 +68,17 @@
         },
         {
           "date": "2026-09-21",
-          "failed_runs": 0,
-          "first_failure": null,
-          "runs": 190
+          "failed_runs": 1,
+          "first_failure": {
+            "detail": "unreachable: <urlopen error [Errno 104] Connection reset by peer>",
+            "time": "2026-09-21T15:35:22.417998+00:00"
+          },
+          "runs": 191
         }
       ],
-      "last_checked": "2026-09-21T15:30:39.280790+00:00",
+      "last_checked": "2026-09-21T15:35:22.417998+00:00",
       "name": "API",
-      "status": "up",
+      "status": "down",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
     },
     "website": {
@@ -146,10 +149,10 @@
           "date": "2026-09-21",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 190
+          "runs": 191
         }
       ],
-      "last_checked": "2026-09-21T15:30:38.754041+00:00",
+      "last_checked": "2026-09-21T15:35:22.376649+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
