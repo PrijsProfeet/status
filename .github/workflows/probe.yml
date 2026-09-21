@@ -52,12 +52,25 @@ jobs:
           git add data/status.json
           git diff --cached --quiet && exit 0
           git commit -m "status: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          # A scheduled run every 5 minutes will occasionally race a manual
-          # push; rebase-and-retry once rather than failing the whole run.
+          # The schedule and the external dispatch both fire every 5 minutes,
+          # and cancel-in-progress lands too late to stop the loser's push —
+          # so two runs can push status.json within seconds of each other.
+          # A rebase can never merge two rewrites of one snapshot file (it
+          # conflicted on 2026-09-16 and 2026-09-21), so take the winner's
+          # state and re-probe on top of it: probe.py derives incidents and
+          # history from the previous file, so this is also the correct merge.
           for i in 1 2 3; do
-            git push && break
-            git pull --rebase && git push && break
+            git push && exit 0
+            git fetch origin main
+            git reset --hard origin/main
+            # The stall verdict is reported by the first probe's step outcome.
+            python3 collector/probe.py || true
+            git add data/status.json
+            git diff --cached --quiet && exit 0
+            git commit -m "status: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           done
+          echo "::error::could not push status.json after 3 attempts"
+          exit 1
 
       - name: Fail loudly on a stalled pipeline
         # Runs after the commit above, so a stall is still visible on the
