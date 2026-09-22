@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T12:15:25.631528+00:00",
+  "generated_at": "2026-09-22T12:20:29.307177+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -79,10 +79,10 @@
           "date": "2026-09-22",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 151
+          "runs": 152
         }
       ],
-      "last_checked": "2026-09-22T12:15:29.777662+00:00",
+      "last_checked": "2026-09-22T12:20:31.051604+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -164,10 +164,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-22T08:55:35.951024+00:00"
           },
-          "runs": 151
+          "runs": 152
         }
       ],
-      "last_checked": "2026-09-22T12:15:29.328662+00:00",
+      "last_checked": "2026-09-22T12:20:30.413405+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -176,14 +176,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997550820475141,
-        "availability_pct": 99.9755,
+        "availability": 0.9997388010970354,
+        "availability_pct": 99.9739,
         "closed": false,
-        "downtime_minutes": 7.5,
+        "downtime_minutes": 8.0,
         "maintenance_minutes": 472.9,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-22T12:15:29.872842+00:00",
+        "measured_to": "2026-09-22T12:20:31.572480+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -192,10 +192,10 @@
         "samples": {
           "bad": 2,
           "excluded": 945,
-          "expected": 62190,
-          "good": 61230,
-          "measurable": 61245,
-          "missing": 13
+          "expected": 62201,
+          "good": 61240,
+          "measurable": 61256,
+          "missing": 14
         },
         "step_seconds": 30,
         "target_pct": 99.5
