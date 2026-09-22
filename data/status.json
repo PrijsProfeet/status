@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T13:25:21.922981+00:00",
+  "generated_at": "2026-09-22T13:30:49.054472+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -79,10 +79,10 @@
           "date": "2026-09-22",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 165
+          "runs": 166
         }
       ],
-      "last_checked": "2026-09-22T13:25:23.135640+00:00",
+      "last_checked": "2026-09-22T13:30:50.155073+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -164,10 +164,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-22T08:55:35.951024+00:00"
           },
-          "runs": 165
+          "runs": 166
         }
       ],
-      "last_checked": "2026-09-22T13:25:22.636106+00:00",
+      "last_checked": "2026-09-22T13:30:49.697030+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -176,25 +176,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997392947924135,
-        "availability_pct": 99.9739,
+        "availability": 0.999723072913273,
+        "availability_pct": 99.9723,
         "closed": false,
-        "downtime_minutes": 8.0,
-        "maintenance_minutes": 474.9,
+        "downtime_minutes": 8.5,
+        "maintenance_minutes": 476.7,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-22T13:20:30.690896+00:00",
+        "measured_to": "2026-09-22T13:30:50.510465+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 229,
+        "release_windows": 230,
         "samples": {
-          "bad": 2,
-          "excluded": 949,
-          "expected": 62321,
-          "good": 61356,
-          "measurable": 61372,
+          "bad": 3,
+          "excluded": 953,
+          "expected": 62341,
+          "good": 61371,
+          "measurable": 61388,
           "missing": 14
         },
         "step_seconds": 30,
