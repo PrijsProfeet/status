@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T10:45:28.470779+00:00",
+  "generated_at": "2026-09-22T10:50:25.838103+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -79,10 +79,10 @@
           "date": "2026-09-22",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 132
+          "runs": 133
         }
       ],
-      "last_checked": "2026-09-22T10:45:29.917374+00:00",
+      "last_checked": "2026-09-22T10:50:29.667985+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -164,10 +164,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-22T08:55:35.951024+00:00"
           },
-          "runs": 132
+          "runs": 133
         }
       ],
-      "last_checked": "2026-09-22T10:45:29.701619+00:00",
+      "last_checked": "2026-09-22T10:50:29.470773+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -176,14 +176,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997543520626239,
-        "availability_pct": 99.9754,
+        "availability": 0.99977079990832,
+        "availability_pct": 99.9771,
         "closed": false,
-        "downtime_minutes": 7.5,
+        "downtime_minutes": 7.0,
         "maintenance_minutes": 469.4,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-22T10:40:31.630198+00:00",
+        "measured_to": "2026-09-22T10:50:29.791523+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -192,10 +192,10 @@
         "samples": {
           "bad": 2,
           "excluded": 938,
-          "expected": 62001,
-          "good": 61048,
-          "measurable": 61063,
-          "missing": 13
+          "expected": 62020,
+          "good": 61068,
+          "measurable": 61082,
+          "missing": 12
         },
         "step_seconds": 30,
         "target_pct": 99.5
