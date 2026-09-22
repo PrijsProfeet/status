@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T11:25:22.347504+00:00",
+  "generated_at": "2026-09-22T11:30:35.133829+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -79,10 +79,10 @@
           "date": "2026-09-22",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 140
+          "runs": 141
         }
       ],
-      "last_checked": "2026-09-22T11:25:23.852789+00:00",
+      "last_checked": "2026-09-22T11:30:36.339511+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -164,10 +164,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-22T08:55:35.951024+00:00"
           },
-          "runs": 140
+          "runs": 141
         }
       ],
-      "last_checked": "2026-09-22T11:25:23.278163+00:00",
+      "last_checked": "2026-09-22T11:30:35.895204+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -176,25 +176,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.999754673470389,
+        "availability": 0.9997547376510407,
         "availability_pct": 99.9755,
         "closed": false,
         "downtime_minutes": 7.5,
-        "maintenance_minutes": 469.4,
+        "maintenance_minutes": 471.2,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-22T11:20:32.025825+00:00",
+        "measured_to": "2026-09-22T11:30:36.439137+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 226,
+        "release_windows": 227,
         "samples": {
           "bad": 2,
-          "excluded": 938,
-          "expected": 62081,
-          "good": 61128,
-          "measurable": 61143,
+          "excluded": 942,
+          "expected": 62101,
+          "good": 61144,
+          "measurable": 61159,
           "missing": 13
         },
         "step_seconds": 30,
