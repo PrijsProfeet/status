@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T13:55:21.802176+00:00",
+  "generated_at": "2026-09-23T14:00:46.010957+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -85,10 +85,10 @@
           "date": "2026-09-23",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 171
+          "runs": 172
         }
       ],
-      "last_checked": "2026-09-23T13:55:22.961566+00:00",
+      "last_checked": "2026-09-23T14:00:47.127510+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -176,10 +176,10 @@
           "date": "2026-09-23",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 171
+          "runs": 172
         }
       ],
-      "last_checked": "2026-09-23T13:55:22.458245+00:00",
+      "last_checked": "2026-09-23T14:00:46.722123+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -188,25 +188,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997200012444389,
+        "availability": 0.9997200709153681,
         "availability_pct": 99.972,
         "closed": false,
         "downtime_minutes": 9.0,
-        "maintenance_minutes": 487.8,
+        "maintenance_minutes": 489.6,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-23T13:50:32.220905+00:00",
+        "measured_to": "2026-09-23T14:00:47.279379+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 236,
+        "release_windows": 237,
         "samples": {
           "bad": 3,
-          "excluded": 975,
-          "expected": 65261,
-          "good": 64268,
-          "measurable": 64286,
+          "excluded": 979,
+          "expected": 65281,
+          "good": 64284,
+          "measurable": 64302,
           "missing": 15
         },
         "step_seconds": 30,
