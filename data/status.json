@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T07:05:20.829199+00:00",
+  "generated_at": "2026-09-23T07:10:29.506141+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -85,10 +85,10 @@
           "date": "2026-09-23",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 88
+          "runs": 89
         }
       ],
-      "last_checked": "2026-09-23T07:05:21.434043+00:00",
+      "last_checked": "2026-09-23T07:10:30.964184+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -176,10 +176,10 @@
           "date": "2026-09-23",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 88
+          "runs": 89
         }
       ],
-      "last_checked": "2026-09-23T07:05:21.047316+00:00",
+      "last_checked": "2026-09-23T07:10:30.355735+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -188,25 +188,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997164327236637,
-        "availability_pct": 99.9716,
+        "availability": 0.9997165086464863,
+        "availability_pct": 99.9717,
         "closed": false,
         "downtime_minutes": 9.0,
-        "maintenance_minutes": 482.1,
+        "maintenance_minutes": 484.0,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-23T07:00:46.173992+00:00",
+        "measured_to": "2026-09-23T07:10:31.467258+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 233,
+        "release_windows": 234,
         "samples": {
           "bad": 3,
-          "excluded": 964,
-          "expected": 64441,
-          "good": 63459,
-          "measurable": 63477,
+          "excluded": 967,
+          "expected": 64461,
+          "good": 63476,
+          "measurable": 63494,
           "missing": 15
         },
         "step_seconds": 30,
