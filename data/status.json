@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T16:40:27.830698+00:00",
+  "generated_at": "2026-09-25T16:45:27.660710+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -100,10 +100,10 @@
           "date": "2026-09-25",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 205
+          "runs": 206
         }
       ],
-      "last_checked": "2026-09-25T16:40:30.764987+00:00",
+      "last_checked": "2026-09-25T16:45:31.026650+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -206,10 +206,10 @@
           "date": "2026-09-25",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 205
+          "runs": 206
         }
       ],
-      "last_checked": "2026-09-25T16:40:30.266068+00:00",
+      "last_checked": "2026-09-25T16:45:30.536700+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -218,25 +218,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9995448985977188,
+        "availability": 0.999545066818311,
         "availability_pct": 99.9545,
         "closed": false,
         "downtime_minutes": 16.0,
-        "maintenance_minutes": 513.6,
+        "maintenance_minutes": 515.5,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-25T16:30:45.981276+00:00",
+        "measured_to": "2026-09-25T16:45:31.461202+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 249,
+        "release_windows": 250,
         "samples": {
           "bad": 16,
-          "excluded": 1027,
-          "expected": 71341,
-          "good": 70282,
-          "measurable": 70314,
+          "excluded": 1031,
+          "expected": 71371,
+          "good": 70308,
+          "measurable": 70340,
           "missing": 16
         },
         "step_seconds": 30,
