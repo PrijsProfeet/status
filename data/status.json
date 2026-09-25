@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T16:05:21.857126+00:00",
+  "generated_at": "2026-09-25T16:10:29.560338+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -100,10 +100,10 @@
           "date": "2026-09-25",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 198
+          "runs": 199
         }
       ],
-      "last_checked": "2026-09-25T16:05:23.116690+00:00",
+      "last_checked": "2026-09-25T16:10:31.308412+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -206,10 +206,10 @@
           "date": "2026-09-25",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 198
+          "runs": 199
         }
       ],
-      "last_checked": "2026-09-25T16:05:22.593536+00:00",
+      "last_checked": "2026-09-25T16:10:30.638546+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -218,25 +218,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9995445617830406,
+        "availability": 0.9995446654714135,
         "availability_pct": 99.9545,
         "closed": false,
         "downtime_minutes": 16.0,
-        "maintenance_minutes": 509.9,
+        "maintenance_minutes": 511.8,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-25T16:00:48.573105+00:00",
+        "measured_to": "2026-09-25T16:10:31.856382+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 247,
+        "release_windows": 248,
         "samples": {
           "bad": 16,
-          "excluded": 1019,
-          "expected": 71281,
-          "good": 70230,
-          "measurable": 70262,
+          "excluded": 1023,
+          "expected": 71301,
+          "good": 70246,
+          "measurable": 70278,
           "missing": 16
         },
         "step_seconds": 30,
