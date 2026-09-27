@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-27T21:25:21.720526+00:00",
+  "generated_at": "2026-09-27T21:30:34.151743+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -112,10 +112,10 @@
           "date": "2026-09-27",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 263
+          "runs": 264
         }
       ],
-      "last_checked": "2026-09-27T21:25:23.275253+00:00",
+      "last_checked": "2026-09-27T21:30:34.525043+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -233,10 +233,10 @@
             "detail": "unreachable: <urlopen error [Errno 104] Connection reset by peer>",
             "time": "2026-09-27T09:00:45.826929+00:00"
           },
-          "runs": 263
+          "runs": 264
         }
       ],
-      "last_checked": "2026-09-27T21:25:22.703300+00:00",
+      "last_checked": "2026-09-27T21:30:34.368467+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -245,14 +245,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9995688697856107,
-        "availability_pct": 99.9569,
+        "availability": 0.9995558690597487,
+        "availability_pct": 99.9556,
         "closed": false,
-        "downtime_minutes": 16.5,
+        "downtime_minutes": 17.0,
         "maintenance_minutes": 573.9,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-27T21:25:23.452156+00:00",
+        "measured_to": "2026-09-27T21:30:34.617851+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -261,10 +261,10 @@
         "samples": {
           "bad": 16,
           "excluded": 1147,
-          "expected": 77690,
-          "good": 76510,
-          "measurable": 76543,
-          "missing": 17
+          "expected": 77701,
+          "good": 76520,
+          "measurable": 76554,
+          "missing": 18
         },
         "step_seconds": 30,
         "target_pct": 99.5
