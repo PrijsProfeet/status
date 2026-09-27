@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-27T15:45:24.030540+00:00",
+  "generated_at": "2026-09-27T15:50:27.538342+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -112,10 +112,10 @@
           "date": "2026-09-27",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 193
+          "runs": 194
         }
       ],
-      "last_checked": "2026-09-27T15:45:25.039070+00:00",
+      "last_checked": "2026-09-27T15:50:36.002765+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -233,10 +233,10 @@
             "detail": "unreachable: <urlopen error [Errno 104] Connection reset by peer>",
             "time": "2026-09-27T09:00:45.826929+00:00"
           },
-          "runs": 193
+          "runs": 194
         }
       ],
-      "last_checked": "2026-09-27T15:45:24.591418+00:00",
+      "last_checked": "2026-09-27T15:50:35.591443+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -245,25 +245,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9995649938703681,
+        "availability": 0.9995650855990617,
         "availability_pct": 99.9565,
         "closed": false,
         "downtime_minutes": 16.5,
-        "maintenance_minutes": 570.1,
+        "maintenance_minutes": 572.0,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-27T15:40:34.445160+00:00",
+        "measured_to": "2026-09-27T15:50:36.335973+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 279,
+        "release_windows": 280,
         "samples": {
           "bad": 16,
-          "excluded": 1140,
-          "expected": 77001,
-          "good": 75828,
-          "measurable": 75861,
+          "excluded": 1144,
+          "expected": 77021,
+          "good": 75844,
+          "measurable": 75877,
           "missing": 17
         },
         "step_seconds": 30,
