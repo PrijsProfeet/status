@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T10:45:28.034120+00:00",
+  "generated_at": "2026-09-28T10:50:25.577823+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -119,10 +119,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 133
+          "runs": 134
         }
       ],
-      "last_checked": "2026-09-28T10:45:32.755769+00:00",
+      "last_checked": "2026-09-28T10:50:26.286912+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -136,10 +136,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 57
+          "runs": 58
         }
       ],
-      "last_checked": "2026-09-28T10:45:34.016619+00:00",
+      "last_checked": "2026-09-28T10:50:27.680066+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -264,10 +264,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 133
+          "runs": 134
         }
       ],
-      "last_checked": "2026-09-28T10:45:32.604182+00:00",
+      "last_checked": "2026-09-28T10:50:26.130307+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -281,10 +281,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 57
+          "runs": 58
         }
       ],
-      "last_checked": "2026-09-28T10:45:33.485287+00:00",
+      "last_checked": "2026-09-28T10:50:27.163201+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
@@ -293,14 +293,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997951423120751,
+        "availability": 0.9997951947569858,
         "availability_pct": 99.9795,
         "closed": false,
         "downtime_minutes": 8.0,
         "maintenance_minutes": 589.1,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-28T10:40:33.200928+00:00",
+        "measured_to": "2026-09-28T10:50:33.464988+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -309,9 +309,9 @@
         "samples": {
           "bad": 16,
           "excluded": 1178,
-          "expected": 79281,
-          "good": 78069,
-          "measurable": 78103,
+          "expected": 79301,
+          "good": 78089,
+          "measurable": 78123,
           "missing": 0
         },
         "step_seconds": 30,
