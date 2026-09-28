@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T05:45:25.557246+00:00",
+  "generated_at": "2026-09-28T05:50:28.017462+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -118,10 +118,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 71
+          "runs": 72
         }
       ],
-      "last_checked": "2026-09-28T05:45:26.158930+00:00",
+      "last_checked": "2026-09-28T05:50:33.028177+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -245,10 +245,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 71
+          "runs": 72
         }
       ],
-      "last_checked": "2026-09-28T05:45:25.764404+00:00",
+      "last_checked": "2026-09-28T05:50:32.819848+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -257,35 +257,35 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9995613242845716,
-        "availability_pct": 99.9561,
+        "availability": 0.9997936309347228,
+        "availability_pct": 99.9794,
         "closed": false,
-        "downtime_minutes": 17.0,
-        "maintenance_minutes": 583.4,
+        "downtime_minutes": 8.0,
+        "maintenance_minutes": 585.2,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-28T05:36:03.131390+00:00",
+        "measured_to": "2026-09-28T05:50:33.555437+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 286,
+        "release_windows": 287,
         "samples": {
           "bad": 16,
-          "excluded": 1166,
-          "expected": 78672,
-          "good": 77472,
-          "measurable": 77506,
-          "missing": 18
+          "excluded": 1170,
+          "expected": 78701,
+          "good": 77497,
+          "measurable": 77531,
+          "missing": 0
         },
         "step_seconds": 30,
         "target_pct": 99.5
       },
       {
-        "availability": 0.9999318917078154,
-        "availability_pct": 99.9932,
+        "availability": 0.999761620977354,
+        "availability_pct": 99.9762,
         "closed": true,
-        "downtime_minutes": 9.5,
+        "downtime_minutes": 10.5,
         "maintenance_minutes": 592.5,
         "measured": true,
         "measured_from": "2026-07-31T22:00:00+00:00",
@@ -301,7 +301,7 @@
           "expected": 89280,
           "good": 88089,
           "measurable": 88095,
-          "missing": 0
+          "missing": 2
         },
         "step_seconds": 30,
         "target_pct": 99.5
