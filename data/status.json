@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T17:25:23.072152+00:00",
+  "generated_at": "2026-09-28T17:30:44.536488+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -119,10 +119,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 214
+          "runs": 215
         }
       ],
-      "last_checked": "2026-09-28T17:25:24.256127+00:00",
+      "last_checked": "2026-09-28T17:30:48.325736+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -136,10 +136,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 138
+          "runs": 139
         }
       ],
-      "last_checked": "2026-09-28T17:25:25.867023+00:00",
+      "last_checked": "2026-09-28T17:30:51.559137+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -264,10 +264,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 214
+          "runs": 215
         }
       ],
-      "last_checked": "2026-09-28T17:25:23.739961+00:00",
+      "last_checked": "2026-09-28T17:30:47.676653+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -284,10 +284,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-28T15:20:48.529596+00:00"
           },
-          "runs": 138
+          "runs": 139
         }
       ],
-      "last_checked": "2026-09-28T17:25:25.174078+00:00",
+      "last_checked": "2026-09-28T17:30:50.824296+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
@@ -296,14 +296,14 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9997971910966892,
+        "availability": 0.9997972424979724,
         "availability_pct": 99.9797,
         "closed": false,
         "downtime_minutes": 8.0,
         "maintenance_minutes": 595.0,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-28T17:20:36.027519+00:00",
+        "measured_to": "2026-09-28T17:30:52.127476+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
@@ -312,9 +312,9 @@
         "samples": {
           "bad": 16,
           "excluded": 1189,
-          "expected": 80081,
-          "good": 78857,
-          "measurable": 78892,
+          "expected": 80101,
+          "good": 78878,
+          "measurable": 78912,
           "missing": 0
         },
         "step_seconds": 30,
