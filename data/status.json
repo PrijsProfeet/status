@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T05:15:30.242752+00:00",
+  "generated_at": "2026-09-28T05:20:29.103418+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -118,10 +118,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 65
+          "runs": 66
         }
       ],
-      "last_checked": "2026-09-28T05:15:32.954290+00:00",
+      "last_checked": "2026-09-28T05:20:34.331905+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -245,10 +245,10 @@
           "date": "2026-09-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 65
+          "runs": 66
         }
       ],
-      "last_checked": "2026-09-28T05:15:32.553160+00:00",
+      "last_checked": "2026-09-28T05:20:33.608666+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -257,25 +257,25 @@
   "sla": {
     "months": [
       {
-        "availability": 0.9995610581081604,
+        "availability": 0.9995611487576638,
         "availability_pct": 99.9561,
         "closed": false,
         "downtime_minutes": 17.0,
-        "maintenance_minutes": 581.5,
+        "maintenance_minutes": 583.4,
         "measured": true,
         "measured_from": "2026-08-31T22:00:00+00:00",
-        "measured_to": "2026-09-28T05:10:32.959760+00:00",
+        "measured_to": "2026-09-28T05:20:34.833238+00:00",
         "met": true,
         "month": "2026-09",
         "partial": true,
         "probe": "https://www.prijsprofeet.nl/api/v1/ready",
-        "release_windows": 285,
+        "release_windows": 286,
         "samples": {
           "bad": 16,
-          "excluded": 1162,
-          "expected": 78621,
-          "good": 77425,
-          "measurable": 77459,
+          "excluded": 1166,
+          "expected": 78641,
+          "good": 77441,
+          "measurable": 77475,
           "missing": 18
         },
         "step_seconds": 30,
