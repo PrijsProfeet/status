@@ -1,6 +1,7 @@
 # PrijsProfeet Status
 
-External status page for prijsprofeet.nl — website and API — probed from
+External status page for prijsprofeet.nl and prijsprofeet.be — website and
+API — probed from
 **outside** the box it reports on. See
 [prijsprofeet#841](https://github.com/PrijsProfeet/prijsprofeet/issues/841)
 for why: a status page hosted on the same infrastructure as the thing it
@@ -9,8 +10,10 @@ monitors answers "up" from inside the very outage it should report.
 ## How it works
 
 - `collector/probe.py` (stdlib-only Python) hits `/` and `/api/v1/ready` on
-  `www.prijsprofeet.nl`, plus the public `/api/v1/sla/summary` endpoint for
-  the monthly SLA track record, and writes the result into `data/status.json`.
+  every host in its `SITES` table (`www.prijsprofeet.nl`, `www.prijsprofeet.be`),
+  rendered as one group per country on a single page, plus the public `/api/v1/sla/summary` endpoint for
+  the monthly SLA track record (read from `.nl` only — the SLA covers `.nl`
+  and nothing else), and writes the result into `data/status.json`.
 - `.github/workflows/probe.yml` runs that script every 5 minutes (best
   effort — GitHub can delay a scheduled run under load) and commits the
   updated JSON straight to `main`.

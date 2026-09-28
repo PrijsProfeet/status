@@ -12,6 +12,8 @@ from datetime import datetime, timedelta, timezone
 from probe import (
     INCIDENT_HISTORY_DAYS,
     INCIDENT_THRESHOLD,
+    SITES,
+    SLA_BASE_URL,
     STALL_THRESHOLD_MINUTES,
     CheckResult,
     _prune_incidents,
@@ -158,6 +160,42 @@ class TestStallDetection(unittest.TestCase):
         now = datetime.now(timezone.utc)
         previous = (now - timedelta(minutes=STALL_THRESHOLD_MINUTES + 1)).isoformat()
         self.assertGreater(_stall_minutes(previous, now), STALL_THRESHOLD_MINUTES)
+
+
+class TestBothStorefronts(unittest.TestCase):
+    def test_nl_keeps_its_unsuffixed_keys_so_its_history_carries_over(self):
+        self.assertEqual(SITES[0][1], "https://www.prijsprofeet.nl")
+        self.assertEqual(SITES[0][2], "")
+
+    def test_every_site_gets_its_own_service_keys(self):
+        suffixes = [suffix for _group, _url, suffix in SITES]
+        self.assertEqual(len(suffixes), len(set(suffixes)))
+        self.assertIn("https://www.prijsprofeet.be", [url for _g, url, _s in SITES])
+
+    def test_the_sla_is_read_from_nl_only(self):
+        # The Business SLA covers .nl alone (API-voorwaarden art. 10).
+        self.assertEqual(SLA_BASE_URL, "https://www.prijsprofeet.nl")
+
+    def test_an_incident_names_the_country_it_happened_in(self):
+        data = _fresh_data()
+        for _ in range(INCIDENT_THRESHOLD):
+            _update_service(
+                data, "api_be", "API", "url", CheckResult(False, "HTTP 525"), "België"
+            )
+        self.assertEqual(data["incidents"][0]["name"], "API (België)")
+        self.assertEqual(data["services"]["api_be"]["group"], "België")
+
+    def test_a_be_outage_leaves_the_nl_rows_alone(self):
+        data = _fresh_data()
+        for _ in range(INCIDENT_THRESHOLD):
+            _update_service(
+                data, "api_be", "API", "url", CheckResult(False, "down"), "België"
+            )
+            _update_service(
+                data, "api", "API", "url", CheckResult(True, "200 OK"), "Nederland"
+            )
+        self.assertEqual([i["service"] for i in data["incidents"]], ["api_be"])
+        self.assertEqual(data["services"]["api"]["status"], "up")
 
 
 if __name__ == "__main__":

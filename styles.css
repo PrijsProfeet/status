@@ -215,3 +215,10 @@ footer {
 .build { display: block; margin-top: 4px; opacity: 0.6; }
 
 a { color: inherit; }
+
+/* Country heading above each storefront's rows (Nederland / België). */
+.group-title {
+  font-size: 1.05rem;
+  margin: 24px 0 10px;
+}
+.group-title:first-child { margin-top: 0; }

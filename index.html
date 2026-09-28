@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PrijsProfeet Status</title>
-<meta name="description" content="Live availability of prijsprofeet.nl (website and API), probed from outside its own infrastructure.">
+<meta name="description" content="Live availability of prijsprofeet.nl and prijsprofeet.be (website and API), probed from outside its own infrastructure.">
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='%232e9e5b'/></svg>">
@@ -39,10 +39,12 @@
   </section>
 
   <section class="sla" id="sla" hidden>
-    <h2>Maandelijkse beschikbaarheid (Business SLA)</h2>
+    <h2>Maandelijkse beschikbaarheid (Business SLA, prijsprofeet.nl)</h2>
     <p class="sla-note">
       Dit is de contractuele meting — een externe probe op <code>/api/v1/ready</code>,
-      elke 30s, met releasevensters uitgesloten. Zie de
+      elke 30s, met releasevensters uitgesloten. De SLA geldt alleen voor
+      <code>www.prijsprofeet.nl</code>; prijsprofeet.be wordt hierboven wel
+      bewaakt, maar valt er niet onder. Zie de
       <a href="https://prijsprofeet.nl/api-voorwaarden" rel="noopener">API-voorwaarden</a> (art. 10).
     </p>
     <table id="sla-table"></table>
@@ -50,7 +52,7 @@
 
   <footer>
     Checks lopen elke paar minuten vanaf GitHub Actions — buiten het
-    prijsprofeet.nl-netwerk, zodat een storing daar deze pagina niet meesleurt.
+    prijsprofeet-netwerk, zodat een storing daar deze pagina niet meesleurt.
     Elke balk is één UTC-dag over de laatste 31 dagen.
     <span class="build" id="build"></span>
   </footer>

@@ -279,12 +279,19 @@ function renderData(data) {
 
   const main = document.getElementById('services');
   main.innerHTML = '';
-  const order = ['website', 'api'];
-  const keys = Object.keys(data.services || {}).sort(
-    (a, b) => order.indexOf(a) - order.indexOf(b),
-  );
+  // One page, both storefronts: rows grouped per country under a heading,
+  // so a host-only outage (DNS, Cloudflare zone, certificate) reads as such.
+  const order = ['website', 'api', 'website_be', 'api_be'];
+  const rank = (key) => (order.includes(key) ? order.indexOf(key) : order.length);
+  const keys = Object.keys(data.services || {}).sort((a, b) => rank(a) - rank(b));
+  let group = null;
   for (const key of keys) {
-    main.appendChild(renderService(data.services[key]));
+    const service = data.services[key];
+    if (service.group && service.group !== group) {
+      group = service.group;
+      main.appendChild(el('h2', 'group-title', group));
+    }
+    main.appendChild(renderService(service));
   }
 
   renderIncidents(data.incidents);

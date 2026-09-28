@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Probes prijsprofeet.nl from OUTSIDE its own infrastructure and writes
+"""Probes prijsprofeet.nl and prijsprofeet.be from OUTSIDE its own infrastructure and writes
 data/status.json — see #841 (statuspagina buiten de box).
 
 Deliberately stdlib-only (urllib), so this needs no `pip install` step and
@@ -58,6 +58,21 @@ INCIDENT_HISTORY_DAYS = 180
 # for 90+ minutes with nothing failing loudly about it. 3x the cadence
 # tolerates one slow or skipped run without crying wolf.
 STALL_THRESHOLD_MINUTES = 15
+
+# One status page for both storefronts, not one per country: they run on the
+# same box, so most outages hit both, and one page shows at a glance whether
+# it is one host or all of them. What can break for ONE host alone -- its DNS,
+# its Cloudflare zone, its certificate SAN, nginx `server_name` -- is exactly
+# why each gets its own rows. (country label, base url, service-key suffix)
+# NL keeps the unsuffixed keys so its history and incidents carry over.
+SITES = [
+    ("Nederland", "https://www.prijsprofeet.nl", ""),
+    ("België", "https://www.prijsprofeet.be", "_be"),
+]
+
+# The Business SLA covers .nl only (API-voorwaarden art. 10), so the monthly
+# track record is read from there and nowhere else.
+SLA_BASE_URL = SITES[0][1]
 
 
 @dataclass
@@ -218,12 +233,18 @@ def _prune_incidents(data: dict[str, Any]) -> None:
 
 
 def _update_service(
-    data: dict[str, Any], key: str, name: str, target: str, result: CheckResult
+    data: dict[str, Any],
+    key: str,
+    name: str,
+    target: str,
+    result: CheckResult,
+    group: str = "",
 ) -> None:
     service = data["services"].setdefault(
         key, {"name": name, "target": target, "history": [], "consecutive_failures": 0}
     )
     service["name"] = name
+    service["group"] = group
     service["target"] = target
     service["status"] = "up" if result.ok else "down"
     service["detail"] = result.detail
@@ -249,22 +270,28 @@ def _update_service(
     service["history"] = [d for d in history if d["date"] >= cutoff]
     service["history"].sort(key=lambda d: d["date"])
 
-    _update_incidents(data, key, name, result, service["last_checked"])
+    # An incident list mixes both countries, so it names the host too.
+    incident_name = f"{name} ({group})" if group else name
+    _update_incidents(data, key, incident_name, result, service["last_checked"])
 
 
 def main() -> int:
-    base_url = "https://www.prijsprofeet.nl"
     data = _load()
     previous_generated_at = data.get("generated_at")
     now = datetime.now(timezone.utc)
     data["generated_at"] = now.isoformat()
 
-    _update_service(data, "website", "Website", base_url + "/", check_website(base_url))
-    _update_service(
-        data, "api", "API", base_url + "/api/v1/ready", check_api(base_url)
-    )
+    for group, base_url, suffix in SITES:
+        _update_service(
+            data, "website" + suffix, "Website", base_url + "/",
+            check_website(base_url), group,
+        )
+        _update_service(
+            data, "api" + suffix, "API", base_url + "/api/v1/ready",
+            check_api(base_url), group,
+        )
 
-    sla = fetch_sla_summary(base_url)
+    sla = fetch_sla_summary(SLA_BASE_URL)
     if sla is not None:
         data["sla"] = sla
     # else: keep whatever was last written — a fetch hiccup must not blank
