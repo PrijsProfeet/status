@@ -39,15 +39,15 @@
   </section>
 
   <section class="sla" id="sla" hidden>
-    <h2>Maandelijkse beschikbaarheid (Business SLA, prijsprofeet.nl)</h2>
+    <h2>Maandelijkse beschikbaarheid (Business SLA)</h2>
     <p class="sla-note">
-      Dit is de contractuele meting — een externe probe op <code>/api/v1/ready</code>,
-      elke 30s, met releasevensters uitgesloten. De SLA geldt alleen voor
-      <code>www.prijsprofeet.nl</code>; prijsprofeet.be wordt hierboven wel
-      bewaakt, maar valt er niet onder. Zie de
+      Dit is de contractuele meting — een externe probe op <code>/api/v1/ready</code>
+      van elke host, elke 30s, met releasevensters uitgesloten. De norm van 99,5%
+      geldt per host die je gebruikt en wordt per host apart gemeten, nooit als
+      gemiddelde. Zie de
       <a href="https://prijsprofeet.nl/api-voorwaarden" rel="noopener">API-voorwaarden</a> (art. 10).
     </p>
-    <table id="sla-table"></table>
+    <div id="sla-tables"></div>
   </section>
 
   <footer>

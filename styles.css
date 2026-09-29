@@ -189,22 +189,23 @@ header { margin-bottom: 16px; }
 
 .sla { margin-top: 24px; }
 .sla h2 { font-size: 1.05rem; }
+.sla-host { font-size: 0.95rem; margin: 16px 0 6px; }
 .sla-note { color: var(--text-dim); font-size: 0.85rem; }
 
-#sla-table {
+.sla-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
 
-#sla-table th, #sla-table td {
+.sla-table th, .sla-table td {
   text-align: left;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
 }
 
-#sla-table td.met { color: var(--up); }
-#sla-table td.missed { color: var(--down); }
+.sla-table td.met { color: var(--up); }
+.sla-table td.missed { color: var(--down); }
 
 footer {
   margin-top: 32px;

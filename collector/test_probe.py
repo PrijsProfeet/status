@@ -6,6 +6,7 @@ Stdlib-only, run with `python3 -m unittest collector/test_probe.py` (or
 own zero-dependency policy.
 """
 
+import json
 import unittest
 from datetime import datetime, timedelta, timezone
 
@@ -13,17 +14,19 @@ from probe import (
     INCIDENT_HISTORY_DAYS,
     INCIDENT_THRESHOLD,
     SITES,
-    SLA_BASE_URL,
     STALL_THRESHOLD_MINUTES,
     CheckResult,
     _prune_incidents,
     _stall_minutes,
     _update_service,
+    _update_sla,
+    fetch_sla_summary,
 )
+import probe
 
 
 def _fresh_data():
-    return {"generated_at": None, "services": {}, "sla": None, "incidents": []}
+    return {"generated_at": None, "services": {}, "sla": {}, "incidents": []}
 
 
 class TestIncidentThreshold(unittest.TestCase):
@@ -172,9 +175,6 @@ class TestBothStorefronts(unittest.TestCase):
         self.assertEqual(len(suffixes), len(set(suffixes)))
         self.assertIn("https://www.prijsprofeet.be", [url for _g, url, _s in SITES])
 
-    def test_the_sla_is_read_from_nl_only(self):
-        # The Business SLA covers .nl alone (API-voorwaarden art. 10).
-        self.assertEqual(SLA_BASE_URL, "https://www.prijsprofeet.nl")
 
     def test_an_incident_names_the_country_it_happened_in(self):
         data = _fresh_data()
@@ -200,3 +200,51 @@ class TestBothStorefronts(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSlaPerHost(unittest.TestCase):
+    """The Business SLA is owed per host (#1242): each host's track record is
+    read on that host and stored under it, never borrowed from another."""
+
+    def _answer(self, payload):
+        body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+        original = probe._fetch
+        probe._fetch = lambda url: (200, {}, body, None)
+        self.addCleanup(setattr, probe, "_fetch", original)
+
+    def test_an_answer_for_the_asked_host_is_kept(self):
+        self._answer({"host": "www.prijsprofeet.be", "months": []})
+        summary = fetch_sla_summary("https://www.prijsprofeet.be")
+        self.assertEqual(summary["host"], "www.prijsprofeet.be")
+
+    def test_an_answer_for_another_host_is_refused(self):
+        # Before #1242 .be answered with the .nl figures, without a host field.
+        self._answer({"target_pct": 99.5, "months": []})
+        self.assertIsNone(fetch_sla_summary("https://www.prijsprofeet.be"))
+        self._answer({"host": "www.prijsprofeet.nl", "months": []})
+        self.assertIsNone(fetch_sla_summary("https://www.prijsprofeet.be"))
+
+    def test_garbage_is_no_answer(self):
+        self._answer(b"<html>")
+        self.assertIsNone(fetch_sla_summary("https://www.prijsprofeet.nl"))
+
+    def test_each_host_is_stored_under_its_own_key(self):
+        data = _fresh_data()
+        _update_sla(data, "www.prijsprofeet.nl", {"host": "www.prijsprofeet.nl"})
+        _update_sla(data, "www.prijsprofeet.be", {"host": "www.prijsprofeet.be"})
+        self.assertEqual(set(data["sla"]), {"www.prijsprofeet.nl", "www.prijsprofeet.be"})
+
+    def test_a_failed_fetch_keeps_the_last_record(self):
+        data = _fresh_data()
+        _update_sla(data, "www.prijsprofeet.nl", {"host": "www.prijsprofeet.nl"})
+        _update_sla(data, "www.prijsprofeet.nl", None)
+        self.assertEqual(data["sla"]["www.prijsprofeet.nl"], {"host": "www.prijsprofeet.nl"})
+
+    def test_the_old_single_summary_shape_is_dropped(self):
+        data = _fresh_data()
+        data["sla"] = {"target_pct": 99.5, "months": [{"month": "2026-08"}]}
+        _update_sla(data, "www.prijsprofeet.nl", None)
+        self.assertEqual(data["sla"], {})
+        data["sla"] = None
+        _update_sla(data, "www.prijsprofeet.nl", None)
+        self.assertEqual(data["sla"], {})

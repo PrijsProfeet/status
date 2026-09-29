@@ -172,22 +172,20 @@ function renderBanner(services) {
   banner.querySelector('.banner-text').textContent = text;
 }
 
-function renderSla(sla) {
-  const section = document.getElementById('sla');
+// The Business SLA is owed per host and scored per host (#1242): one table
+// each, never an average. .nl first; its history is the longest.
+const SLA_HOSTS = ['www.prijsprofeet.nl', 'www.prijsprofeet.be'];
+
+function renderSlaTable(summary) {
   // Months before the probe existed (`measured: false`) will never carry a
   // number — that isn't "not yet", it's permanent, so they're dropped rather
   // than shown as a wall of "nog niet gemeten" rows that never resolve.
-  const months = ((sla && sla.months) || []).filter((m) => m.measured);
-  if (!months.length) {
-    section.hidden = true;
-    return;
-  }
-  section.hidden = false;
+  const months = (summary.months || []).filter((m) => m.measured);
+  if (!months.length) return null;
 
-  const table = document.getElementById('sla-table');
-  table.innerHTML = '';
+  const table = el('table', 'sla-table');
   const head = table.insertRow();
-  ['Maand', 'Beschikbaarheid', `Doel: ${sla.target_pct}%`].forEach((h) => {
+  ['Maand', 'Beschikbaarheid', `Doel: ${summary.target_pct}%`].forEach((h) => {
     const th = document.createElement('th');
     th.textContent = h;
     head.appendChild(th);
@@ -213,6 +211,24 @@ function renderSla(sla) {
       verdict.textContent = '—';
     }
   }
+  return table;
+}
+
+function renderSla(slaByHost) {
+  const section = document.getElementById('sla');
+  const container = document.getElementById('sla-tables');
+  container.innerHTML = '';
+  const byHost = slaByHost || {};
+  const hosts = Object.keys(byHost).sort(
+    (a, b) => (SLA_HOSTS.indexOf(a) + 1 || 99) - (SLA_HOSTS.indexOf(b) + 1 || 99),
+  );
+  for (const host of hosts) {
+    const table = renderSlaTable(byHost[host]);
+    if (!table) continue;
+    container.appendChild(el('h3', 'sla-host', host.replace(/^www\./, '')));
+    container.appendChild(table);
+  }
+  section.hidden = !container.children.length;
 }
 
 function formatDuration(ms) {

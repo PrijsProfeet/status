@@ -70,9 +70,6 @@ SITES = [
     ("België", "https://www.prijsprofeet.be", "_be"),
 ]
 
-# The Business SLA covers .nl only (API-voorwaarden art. 10), so the monthly
-# track record is read from there and nowhere else.
-SLA_BASE_URL = SITES[0][1]
 
 
 @dataclass
@@ -130,16 +127,37 @@ def check_website(base_url: str) -> CheckResult:
 
 
 def fetch_sla_summary(base_url: str) -> Optional[dict[str, Any]]:
-    """The monthly track record. Best-effort: absent is a normal state (the
-    endpoint may not exist yet, or Prometheus may be mid-recompute), never a
-    reason to fail the whole run."""
+    """The monthly track record of ONE host. Best-effort: absent is a normal
+    state (the endpoint may not exist yet, or Prometheus may be mid-recompute),
+    never a reason to fail the whole run.
+
+    The Business SLA is owed per host (API-voorwaarden art. 10, #1242) and the
+    endpoint answers for the host it is asked on. An answer that does not name
+    that host is refused: before #1242 every host answered with the .nl figures,
+    and filing those under .be would publish a track record .be never had."""
     status, _headers, body, error = _fetch(f"{base_url}/api/v1/sla/summary?months=12")
     if error or status != 200:
         return None
     try:
-        return json.loads(body)
+        summary = json.loads(body)
     except json.JSONDecodeError:
         return None
+    host = base_url.removeprefix("https://")
+    if not isinstance(summary, dict) or summary.get("host") != host:
+        return None
+    return summary
+
+
+def _update_sla(data: dict[str, Any], host: str, summary: Optional[dict[str, Any]]) -> None:
+    """Store one host's track record under its own key. A failed fetch keeps
+    what was last written — a hiccup must not blank months of SLA history.
+    The pre-#1242 shape (one summary, a `months` key at the top) described .nl
+    alone under no host, so it is dropped rather than guessed at."""
+    sla = data.get("sla")
+    if not isinstance(sla, dict) or "months" in sla:
+        sla = data["sla"] = {}
+    if summary is not None:
+        sla[host] = summary
 
 
 def _stall_minutes(previous_generated_at: Optional[str], now: datetime) -> Optional[float]:
@@ -159,7 +177,7 @@ def _load() -> dict[str, Any]:
     if DATA_FILE.exists():
         data = json.loads(DATA_FILE.read_text())
     else:
-        data = {"generated_at": None, "services": {}, "sla": None}
+        data = {"generated_at": None, "services": {}, "sla": {}}
     data.setdefault("incidents", [])
     return data
 
@@ -291,11 +309,8 @@ def main() -> int:
             check_api(base_url), group,
         )
 
-    sla = fetch_sla_summary(SLA_BASE_URL)
-    if sla is not None:
-        data["sla"] = sla
-    # else: keep whatever was last written — a fetch hiccup must not blank
-    # months of persisted SLA history off the page.
+    for _group, base_url, _suffix in SITES:
+        _update_sla(data, base_url.removeprefix("https://"), fetch_sla_summary(base_url))
 
     _prune_incidents(data)
 

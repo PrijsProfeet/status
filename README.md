@@ -11,9 +11,9 @@ monitors answers "up" from inside the very outage it should report.
 
 - `collector/probe.py` (stdlib-only Python) hits `/` and `/api/v1/ready` on
   every host in its `SITES` table (`www.prijsprofeet.nl`, `www.prijsprofeet.be`),
-  rendered as one group per country on a single page, plus the public `/api/v1/sla/summary` endpoint for
-  the monthly SLA track record (read from `.nl` only — the SLA covers `.nl`
-  and nothing else), and writes the result into `data/status.json`.
+  rendered as one group per country on a single page, plus the public `/api/v1/sla/summary` endpoint on
+  each host for that host's monthly SLA track record (the Business SLA is
+  owed per host, #1242; an answer that names another host is refused), and writes the result into `data/status.json`.
 - `.github/workflows/probe.yml` runs that script every 5 minutes (best
   effort — GitHub can delay a scheduled run under load) and commits the
   updated JSON straight to `main`.
