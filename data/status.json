@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T04:50:26.394875+00:00",
+  "generated_at": "2026-09-30T04:55:56.861335+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -131,17 +131,17 @@
           "date": "2026-09-30",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 60
+          "runs": 61
         }
       ],
-      "last_checked": "2026-09-30T04:50:28.609683+00:00",
+      "last_checked": "2026-09-30T04:55:58.279895+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
     },
     "api_be": {
-      "consecutive_failures": 0,
-      "detail": "200 OK",
+      "consecutive_failures": 1,
+      "detail": "unreachable: The read operation timed out",
       "group": "Belgi\u00eb",
       "history": [
         {
@@ -158,14 +158,17 @@
         },
         {
           "date": "2026-09-30",
-          "failed_runs": 0,
-          "first_failure": null,
-          "runs": 60
+          "failed_runs": 1,
+          "first_failure": {
+            "detail": "unreachable: The read operation timed out",
+            "time": "2026-09-30T04:56:28.401367+00:00"
+          },
+          "runs": 61
         }
       ],
-      "last_checked": "2026-09-30T04:50:30.317137+00:00",
+      "last_checked": "2026-09-30T04:56:28.401367+00:00",
       "name": "API",
-      "status": "up",
+      "status": "down",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
     },
     "website": {
@@ -300,17 +303,17 @@
           "date": "2026-09-30",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 60
+          "runs": 61
         }
       ],
-      "last_checked": "2026-09-30T04:50:28.014865+00:00",
+      "last_checked": "2026-09-30T04:55:57.653568+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
     },
     "website_be": {
-      "consecutive_failures": 0,
-      "detail": "200 OK",
+      "consecutive_failures": 1,
+      "detail": "unreachable: The read operation timed out",
       "group": "Belgi\u00eb",
       "history": [
         {
@@ -330,14 +333,17 @@
         },
         {
           "date": "2026-09-30",
-          "failed_runs": 0,
-          "first_failure": null,
-          "runs": 60
+          "failed_runs": 1,
+          "first_failure": {
+            "detail": "unreachable: The read operation timed out",
+            "time": "2026-09-30T04:56:13.361421+00:00"
+          },
+          "runs": 61
         }
       ],
-      "last_checked": "2026-09-30T04:50:29.546401+00:00",
+      "last_checked": "2026-09-30T04:56:13.361421+00:00",
       "name": "Website",
-      "status": "up",
+      "status": "down",
       "target": "https://www.prijsprofeet.be/"
     }
   },
