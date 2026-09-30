@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T21:55:20.301526+00:00",
+  "generated_at": "2026-09-30T22:00:44.682745+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -131,10 +131,10 @@
           "date": "2026-09-30",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 268
+          "runs": 269
         }
       ],
-      "last_checked": "2026-09-30T21:55:21.691350+00:00",
+      "last_checked": "2026-09-30T22:00:46.192371+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -163,10 +163,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-30T04:56:28.401367+00:00"
           },
-          "runs": 268
+          "runs": 269
         }
       ],
-      "last_checked": "2026-09-30T21:55:23.582290+00:00",
+      "last_checked": "2026-09-30T22:00:48.367637+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -303,10 +303,10 @@
           "date": "2026-09-30",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 268
+          "runs": 269
         }
       ],
-      "last_checked": "2026-09-30T21:55:21.097814+00:00",
+      "last_checked": "2026-09-30T22:00:45.536654+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -338,10 +338,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-30T04:56:13.361421+00:00"
           },
-          "runs": 268
+          "runs": 269
         }
       ],
-      "last_checked": "2026-09-30T21:55:22.797036+00:00",
+      "last_checked": "2026-09-30T22:00:47.512132+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
@@ -352,22 +352,44 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.999925489903882,
-          "availability_pct": 99.9925,
+          "availability": 1.0,
+          "availability_pct": 100.0,
           "closed": false,
+          "downtime_minutes": 0.0,
+          "host": "www.prijsprofeet.be",
+          "measured": true,
+          "measured_from": "2026-09-30T22:00:00+00:00",
+          "measured_to": "2026-09-30T22:00:49.602830+00:00",
+          "met": true,
+          "month": "2026-10",
+          "partial": true,
+          "probe": "https://www.prijsprofeet.be/api/v1/ready",
+          "samples": {
+            "bad": 0,
+            "expected": 1,
+            "good": 2,
+            "missing": 0
+          },
+          "step_seconds": 30,
+          "target_pct": 99.5
+        },
+        {
+          "availability": 0.9999256007737519,
+          "availability_pct": 99.9926,
+          "closed": true,
           "downtime_minutes": 0.5,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-09-26T05:59:30+00:00",
-          "measured_to": "2026-09-30T21:50:29.172651+00:00",
+          "measured_to": "2026-09-30T22:00:00+00:00",
           "met": true,
           "month": "2026-09",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 1,
-            "expected": 13421,
-            "good": 13421,
+            "expected": 13441,
+            "good": 13440,
             "missing": 0
           },
           "step_seconds": 30,
@@ -452,14 +474,6 @@
           "met": null,
           "month": "2025-11",
           "note": "not measured \u2014 the SLA probe for this host went live on 2026-09-26"
-        },
-        {
-          "availability": null,
-          "host": "www.prijsprofeet.be",
-          "measured": false,
-          "met": null,
-          "month": "2025-10",
-          "note": "not measured \u2014 the SLA probe for this host went live on 2026-09-26"
         }
       ],
       "target_pct": 99.5
@@ -468,22 +482,44 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.9997105811530447,
-          "availability_pct": 99.9711,
+          "availability": 1.0,
+          "availability_pct": 100.0,
           "closed": false,
+          "downtime_minutes": 0.0,
+          "host": "www.prijsprofeet.nl",
+          "measured": true,
+          "measured_from": "2026-09-30T22:00:00+00:00",
+          "measured_to": "2026-09-30T22:00:48.951375+00:00",
+          "met": true,
+          "month": "2026-10",
+          "partial": true,
+          "probe": "https://www.prijsprofeet.nl/api/v1/ready",
+          "samples": {
+            "bad": 0,
+            "expected": 1,
+            "good": 1,
+            "missing": 0
+          },
+          "step_seconds": 30,
+          "target_pct": 99.5
+        },
+        {
+          "availability": 0.9997106481481481,
+          "availability_pct": 99.9711,
+          "closed": true,
           "downtime_minutes": 12.5,
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-08-31T22:00:00+00:00",
-          "measured_to": "2026-09-30T21:50:28.246749+00:00",
+          "measured_to": "2026-09-30T22:00:00+00:00",
           "met": true,
           "month": "2026-09",
-          "partial": true,
+          "partial": false,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 22,
-            "expected": 86380,
-            "good": 86355,
+            "expected": 86400,
+            "good": 86374,
             "missing": 3
           },
           "step_seconds": 30,
@@ -603,14 +639,6 @@
           "measured": false,
           "met": null,
           "month": "2025-11",
-          "note": "not measured \u2014 the SLA probe for this host went live on 2026-07-13"
-        },
-        {
-          "availability": null,
-          "host": "www.prijsprofeet.nl",
-          "measured": false,
-          "met": null,
-          "month": "2025-10",
           "note": "not measured \u2014 the SLA probe for this host went live on 2026-07-13"
         }
       ],
