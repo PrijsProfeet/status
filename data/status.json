@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T14:50:30.788978+00:00",
+  "generated_at": "2026-09-30T14:55:24.718276+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -131,10 +131,10 @@
           "date": "2026-09-30",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 182
+          "runs": 183
         }
       ],
-      "last_checked": "2026-09-30T14:50:31.728349+00:00",
+      "last_checked": "2026-09-30T14:55:26.117910+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -163,10 +163,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-30T04:56:28.401367+00:00"
           },
-          "runs": 182
+          "runs": 183
         }
       ],
-      "last_checked": "2026-09-30T14:50:33.016006+00:00",
+      "last_checked": "2026-09-30T14:55:27.990242+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -303,10 +303,10 @@
           "date": "2026-09-30",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 182
+          "runs": 183
         }
       ],
-      "last_checked": "2026-09-30T14:50:31.335981+00:00",
+      "last_checked": "2026-09-30T14:55:25.522950+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -338,10 +338,10 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-09-30T04:56:13.361421+00:00"
           },
-          "runs": 182
+          "runs": 183
         }
       ],
-      "last_checked": "2026-09-30T14:50:32.489794+00:00",
+      "last_checked": "2026-09-30T14:55:27.187999+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
@@ -472,7 +472,7 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.9998100506927213,
+          "availability": 0.999810093528937,
           "availability_pct": 99.981,
           "closed": false,
           "downtime_minutes": 8.0,
@@ -480,7 +480,7 @@
           "maintenance_minutes": 649.4,
           "measured": true,
           "measured_from": "2026-08-31T22:00:00+00:00",
-          "measured_to": "2026-09-30T14:45:32.167499+00:00",
+          "measured_to": "2026-09-30T14:55:28.114873+00:00",
           "met": true,
           "month": "2026-09",
           "partial": true,
@@ -489,9 +489,9 @@
           "samples": {
             "bad": 16,
             "excluded": 1298,
-            "expected": 85531,
-            "good": 84196,
-            "measurable": 84233,
+            "expected": 85550,
+            "good": 84216,
+            "measurable": 84252,
             "missing": 0
           },
           "step_seconds": 30,
