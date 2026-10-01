@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T00:20:26.005439+00:00",
+  "generated_at": "2026-10-01T00:25:22.385795+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -137,10 +137,10 @@
           "date": "2026-10-01",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 5
+          "runs": 6
         }
       ],
-      "last_checked": "2026-10-01T00:20:27.066230+00:00",
+      "last_checked": "2026-10-01T00:25:23.530539+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -175,10 +175,10 @@
           "date": "2026-10-01",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 5
+          "runs": 6
         }
       ],
-      "last_checked": "2026-10-01T00:20:28.103653+00:00",
+      "last_checked": "2026-10-01T00:25:25.483407+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -321,17 +321,17 @@
           "date": "2026-10-01",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 5
+          "runs": 6
         }
       ],
-      "last_checked": "2026-10-01T00:20:26.870153+00:00",
+      "last_checked": "2026-10-01T00:25:23.276733+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
     },
     "website_be": {
-      "consecutive_failures": 1,
-      "detail": "unreachable: IncompleteRead(33687 bytes read)",
+      "consecutive_failures": 0,
+      "detail": "200 OK",
       "group": "Belgi\u00eb",
       "history": [
         {
@@ -365,12 +365,12 @@
             "detail": "unreachable: IncompleteRead(33687 bytes read)",
             "time": "2026-10-01T00:20:27.858271+00:00"
           },
-          "runs": 5
+          "runs": 6
         }
       ],
-      "last_checked": "2026-10-01T00:20:27.858271+00:00",
+      "last_checked": "2026-10-01T00:25:24.628148+00:00",
       "name": "Website",
-      "status": "down",
+      "status": "up",
       "target": "https://www.prijsprofeet.be/"
     }
   },
