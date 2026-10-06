@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T16:46:37.243432+00:00",
+  "generated_at": "2026-10-06T16:50:29.074769+00:00",
   "incidents": [],
   "services": {
     "api": {
@@ -167,17 +167,17 @@
           "date": "2026-10-06",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 205
+          "runs": 206
         }
       ],
-      "last_checked": "2026-10-06T16:46:38.535143+00:00",
+      "last_checked": "2026-10-06T16:50:29.462435+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
     },
     "api_be": {
-      "consecutive_failures": 1,
-      "detail": "unreachable: The read operation timed out",
+      "consecutive_failures": 0,
+      "detail": "200 OK",
       "group": "Belgi\u00eb",
       "history": [
         {
@@ -238,12 +238,12 @@
             "detail": "unreachable: The read operation timed out",
             "time": "2026-10-06T16:46:54.740339+00:00"
           },
-          "runs": 205
+          "runs": 206
         }
       ],
-      "last_checked": "2026-10-06T16:46:54.740339+00:00",
+      "last_checked": "2026-10-06T16:50:32.022079+00:00",
       "name": "API",
-      "status": "down",
+      "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
     },
     "website": {
@@ -414,10 +414,10 @@
           "date": "2026-10-06",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 205
+          "runs": 206
         }
       ],
-      "last_checked": "2026-10-06T16:46:37.958758+00:00",
+      "last_checked": "2026-10-06T16:50:29.283742+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -488,10 +488,10 @@
           "date": "2026-10-06",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 205
+          "runs": 206
         }
       ],
-      "last_checked": "2026-10-06T16:46:39.674215+00:00",
+      "last_checked": "2026-10-06T16:50:31.157688+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
