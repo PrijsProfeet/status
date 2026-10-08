@@ -19,7 +19,9 @@ from probe import (
     _prune_incidents,
     _stall_minutes,
     _update_service,
+    _update_freshness,
     _update_sla,
+    fetch_freshness,
     fetch_sla_summary,
 )
 import probe
@@ -248,3 +250,39 @@ class TestSlaPerHost(unittest.TestCase):
         data["sla"] = None
         _update_sla(data, "www.prijsprofeet.nl", None)
         self.assertEqual(data["sla"], {})
+
+
+class TestFreshnessPerHost(unittest.TestCase):
+    """Freshness per chain (#1398): read per host, kept on a failed fetch."""
+
+    def _answer(self, status, payload):
+        body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+        original = probe._fetch
+        probe._fetch = lambda url: (status, {}, body, None)
+        self.addCleanup(setattr, probe, "_fetch", original)
+
+    def test_a_summary_is_kept(self):
+        self._answer(200, {"norm": 0.9, "retailers": [{"retailer": "jumbo"}]})
+        summary = fetch_freshness("https://www.prijsprofeet.nl")
+        self.assertEqual(summary["retailers"][0]["retailer"], "jumbo")
+
+    def test_an_error_or_garbage_is_no_answer(self):
+        self._answer(503, {"detail": "down"})
+        self.assertIsNone(fetch_freshness("https://www.prijsprofeet.nl"))
+        self._answer(200, b"<html>")
+        self.assertIsNone(fetch_freshness("https://www.prijsprofeet.nl"))
+        self._answer(200, {"norm": 0.9})
+        self.assertIsNone(fetch_freshness("https://www.prijsprofeet.nl"))
+
+    def test_each_host_under_its_own_key_and_a_failure_keeps_the_last(self):
+        data = _fresh_data()
+        _update_freshness(data, "www.prijsprofeet.nl", {"retailers": ["nl"]})
+        _update_freshness(data, "www.prijsprofeet.be", {"retailers": ["be"]})
+        _update_freshness(data, "www.prijsprofeet.nl", None)
+        self.assertEqual(
+            data["freshness"],
+            {
+                "www.prijsprofeet.nl": {"retailers": ["nl"]},
+                "www.prijsprofeet.be": {"retailers": ["be"]},
+            },
+        )

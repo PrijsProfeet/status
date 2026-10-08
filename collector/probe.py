@@ -160,6 +160,36 @@ def _update_sla(data: dict[str, Any], host: str, summary: Optional[dict[str, Any
         sla[host] = summary
 
 
+def fetch_freshness(base_url: str) -> Optional[dict[str, Any]]:
+    """Freshness per chain on ONE host: was each chain's data fresh at 07:00,
+    and the share of fresh nights per month against the 90% norm (#1398).
+    Best-effort like the SLA summary: absent never fails the run.
+
+    No host check as with the SLA: this endpoint answers for the host it is
+    asked on from its first release, and its chains differ per host anyway."""
+    status, _headers, body, error = _fetch(f"{base_url}/api/v1/freshness/summary?months=3")
+    if error or status != 200:
+        return None
+    try:
+        summary = json.loads(body)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(summary, dict) or not isinstance(summary.get("retailers"), list):
+        return None
+    return summary
+
+
+def _update_freshness(
+    data: dict[str, Any], host: str, summary: Optional[dict[str, Any]]
+) -> None:
+    """Same rule as `_update_sla`: a failed fetch keeps the last answer."""
+    freshness = data.get("freshness")
+    if not isinstance(freshness, dict):
+        freshness = data["freshness"] = {}
+    if summary is not None:
+        freshness[host] = summary
+
+
 def _stall_minutes(previous_generated_at: Optional[str], now: datetime) -> Optional[float]:
     """Minutes since the last successful run, or None on the very first run
     ever (no previous data to compare against — not a stall)."""
@@ -310,7 +340,9 @@ def main() -> int:
         )
 
     for _group, base_url, _suffix in SITES:
-        _update_sla(data, base_url.removeprefix("https://"), fetch_sla_summary(base_url))
+        host = base_url.removeprefix("https://")
+        _update_sla(data, host, fetch_sla_summary(base_url))
+        _update_freshness(data, host, fetch_freshness(base_url))
 
     _prune_incidents(data)
 

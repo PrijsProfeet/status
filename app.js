@@ -231,6 +231,84 @@ function renderSla(slaByHost) {
   section.hidden = !container.children.length;
 }
 
+// Freshness per chain (#1398): was each chain's data fresh at 07:00, and the
+// share of fresh nights per calendar month against the norm. Per host, like
+// the SLA: .be has its own chains. Only fresh or not, never the reason.
+function todayAmsterdam() {
+  // sv-SE formats as YYYY-MM-DD, the shape the API's `day` field uses.
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+}
+
+function pct(ratio) {
+  // Floored, so 89,96% never reads as a met 90%.
+  return `${(Math.floor(ratio * 1000) / 10).toLocaleString('nl-NL')}%`;
+}
+
+function renderFreshnessTable(summary) {
+  const retailers = summary.retailers || [];
+  if (!retailers.length) return null;
+  const today = todayAmsterdam();
+  const current = today.slice(0, 7);
+  const months = [...new Set(retailers.flatMap((r) => (r.months || []).map((m) => m.month)))]
+    .sort()
+    .reverse();
+
+  const table = el('table', 'sla-table');
+  const head = table.insertRow();
+  ['Keten', 'Om 07:00', ...months.map((m) => (m === current ? `${m} (loopt nog)` : m))].forEach(
+    (h) => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      head.appendChild(th);
+    },
+  );
+
+  for (const r of retailers) {
+    const row = table.insertRow();
+    row.insertCell().textContent = r.name || r.retailer;
+
+    const latest = row.insertCell();
+    if (!r.latest) {
+      latest.textContent = 'nog niet gemeten';
+    } else {
+      latest.textContent = r.latest.fresh ? 'vers' : 'niet vers';
+      // A morning that was not frozen yet must not read as today's answer.
+      if (r.latest.day !== today) latest.textContent += ` (${formatDay(r.latest.day)})`;
+      latest.className = r.latest.fresh ? 'met' : 'missed';
+    }
+
+    for (const month of months) {
+      const cell = row.insertCell();
+      const m = (r.months || []).find((x) => x.month === month);
+      if (!m) {
+        cell.textContent = '—';
+        continue;
+      }
+      cell.textContent = `${pct(m.ratio)} (${m.fresh_nights}/${m.nights})`;
+      // Same rule as the SLA: a running month has no verdict yet.
+      if (month !== current) cell.className = m.meets_norm ? 'met' : 'missed';
+    }
+  }
+  return table;
+}
+
+function renderFreshness(byHostData) {
+  const section = document.getElementById('freshness');
+  const container = document.getElementById('freshness-tables');
+  container.innerHTML = '';
+  const byHost = byHostData || {};
+  const hosts = Object.keys(byHost).sort(
+    (a, b) => (SLA_HOSTS.indexOf(a) + 1 || 99) - (SLA_HOSTS.indexOf(b) + 1 || 99),
+  );
+  for (const host of hosts) {
+    const table = renderFreshnessTable(byHost[host]);
+    if (!table) continue;
+    container.appendChild(el('h3', 'sla-host', host.replace(/^www\./, '')));
+    container.appendChild(table);
+  }
+  section.hidden = !container.children.length;
+}
+
 function formatDuration(ms) {
   const mins = Math.round(ms / 60000);
   if (mins < 1) return 'minder dan een minuut';
@@ -312,6 +390,7 @@ function renderData(data) {
 
   renderIncidents(data.incidents);
   renderSla(data.sla);
+  renderFreshness(data.freshness);
 }
 
 /* Re-renders the "Updated N ago" line between polls, without a network
