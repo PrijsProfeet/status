@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08T00:25:23.302480+00:00",
+  "generated_at": "2026-10-08T00:30:39.185821+00:00",
   "incidents": [
     {
       "detail": "unreachable: The read operation timed out",
@@ -187,10 +187,10 @@
           "date": "2026-10-08",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 6
+          "runs": 7
         }
       ],
-      "last_checked": "2026-10-08T00:25:24.113496+00:00",
+      "last_checked": "2026-10-08T00:30:40.711030+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -270,10 +270,10 @@
           "date": "2026-10-08",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 6
+          "runs": 7
         }
       ],
-      "last_checked": "2026-10-08T00:25:25.384860+00:00",
+      "last_checked": "2026-10-08T00:30:42.670389+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -458,10 +458,10 @@
           "date": "2026-10-08",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 6
+          "runs": 7
         }
       ],
-      "last_checked": "2026-10-08T00:25:23.702619+00:00",
+      "last_checked": "2026-10-08T00:30:40.060254+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
@@ -547,10 +547,10 @@
           "date": "2026-10-08",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 6
+          "runs": 7
         }
       ],
-      "last_checked": "2026-10-08T00:25:24.853770+00:00",
+      "last_checked": "2026-10-08T00:30:41.855626+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
@@ -561,22 +561,22 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.9998043148573944,
-          "availability_pct": 99.9804,
+          "availability": 0.99980450613362,
+          "availability_pct": 99.9805,
           "closed": false,
           "downtime_minutes": 2.0,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-08T00:20:33.879017+00:00",
+          "measured_to": "2026-10-08T00:30:43.572135+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 3,
-            "expected": 20441,
-            "good": 20438,
+            "expected": 20461,
+            "good": 20458,
             "missing": 1
           },
           "step_seconds": 30,
@@ -691,22 +691,22 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.9996575510004403,
+          "availability": 0.9996578857338351,
           "availability_pct": 99.9658,
           "closed": false,
           "downtime_minutes": 3.5,
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-08T00:20:33.425635+00:00",
+          "measured_to": "2026-10-08T00:30:43.175287+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 4,
-            "expected": 20441,
-            "good": 20434,
+            "expected": 20461,
+            "good": 20454,
             "missing": 3
           },
           "step_seconds": 30,
