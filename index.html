@@ -7,6 +7,7 @@
 <meta name="description" content="Actuele beschikbaarheid van prijsprofeet.nl en prijsprofeet.be (website en API), gemeten van buiten de eigen infrastructuur.">
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="styles.css">
+<link rel="alternate" type="application/atom+xml" title="Storingen en mededelingen" href="data/incidents.xml">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='%232e9e5b'/></svg>">
 </head>
 <body data-page="index">
@@ -25,6 +26,8 @@
     <span class="dot"></span>
     <span class="banner-text">Status laden…</span>
   </div>
+
+  <section class="notices" id="notices" aria-label="Mededelingen" hidden></section>
 
   <main id="services"></main>
 
@@ -69,6 +72,8 @@
     meesleurt. Elke balk is één dag (UTC) over de laatste 31 dagen: groen is
     alles geslaagd, oranje een dag met een incident, rood een dag waarop elke
     check mislukte. Een omlijnde balk valt vóór de start van die host.
+    Storingen en mededelingen volgen? Abonneer je op de
+    <a href="data/incidents.xml">Atom-feed</a>.
     <span class="build" id="build"></span>
   </footer>
 
