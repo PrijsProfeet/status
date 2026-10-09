@@ -425,3 +425,29 @@ class TestFeed(unittest.TestCase):
         xml = probe.build_feed([], [notice])
         self.assertNotIn("<script>", xml)
         self._parse(xml)
+
+
+class TestLocalDays(unittest.TestCase):
+    def test_a_summer_night_after_midnight_is_the_next_day(self):
+        # 22:30 UTC on 6 Oct is 00:30 on 7 Oct in NL/BE (CEST, +02:00).
+        self.assertEqual(
+            probe._local_day(datetime(2026, 10, 6, 22, 30, tzinfo=timezone.utc)), "2026-10-07"
+        )
+        self.assertEqual(
+            probe._local_day(datetime(2026, 10, 6, 21, 30, tzinfo=timezone.utc)), "2026-10-06"
+        )
+
+    def test_a_winter_night_shifts_one_hour_less(self):
+        # CET, +01:00: 22:30 UTC is still 23:30 the same day.
+        self.assertEqual(
+            probe._local_day(datetime(2026, 12, 1, 22, 30, tzinfo=timezone.utc)), "2026-12-01"
+        )
+        self.assertEqual(
+            probe._local_day(datetime(2026, 12, 1, 23, 30, tzinfo=timezone.utc)), "2026-12-02"
+        )
+
+    def test_a_check_is_counted_on_todays_local_day(self):
+        data = _fresh_data()
+        _update_service(data, "api", "API", "url", CheckResult(True, "200 OK"))
+        today = probe._local_day(datetime.now(timezone.utc))
+        self.assertEqual([d["date"] for d in data["services"]["api"]["history"]], [today])

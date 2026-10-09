@@ -256,8 +256,17 @@ def _stall_minutes(previous_generated_at: Optional[str], now: datetime) -> Optio
     return (now - previous).total_seconds() / 60
 
 
-def _today_utc() -> str:
-    return datetime.now(timezone.utc).date().isoformat()
+def _local_day(instant: datetime) -> str:
+    """The calendar day of an instant in the Netherlands and Belgium (one
+    timezone, CET/CEST). History buckets are keyed on it, like the SLA and
+    freshness months: an outage at 00:30 belongs to the day a reader calls
+    that night, not to the UTC day before it.
+
+    Buckets up to and including 2026-10-09 are UTC days and stay as they are:
+    a run count cannot be split after the fact, and they age out of
+    HISTORY_DAYS. The switch is exact (UTC 10-09 ended at local midnight);
+    app.js's LOCAL_DAYS_FROM marks it for the incident colouring."""
+    return instant.astimezone(AMSTERDAM).date().isoformat()
 
 
 def _load() -> dict[str, Any]:
@@ -355,7 +364,8 @@ def _update_service(
     service["detail"] = result.detail
     service["last_checked"] = datetime.now(timezone.utc).isoformat()
 
-    today = _today_utc()
+    now = datetime.now(timezone.utc)
+    today = _local_day(now)
     history: list[dict[str, Any]] = service["history"]
     day = next((d for d in history if d["date"] == today), None)
     if day is None:
@@ -371,7 +381,7 @@ def _update_service(
                 "detail": result.detail,
             }
 
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)).date().isoformat()
+    cutoff = _local_day(now - timedelta(days=HISTORY_DAYS))
     service["history"] = [d for d in history if d["date"] >= cutoff]
     service["history"].sort(key=lambda d: d["date"])
 
