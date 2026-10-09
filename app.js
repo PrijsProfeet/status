@@ -33,6 +33,15 @@ const STATUS_TEXT = {
 
 // probe.py writes urllib's own (English) wording into `detail`, and the stored
 // history keeps it, so it is translated here, on display.
+const UNREACHABLE_REASONS = [
+  [/timed out/i, 'time-out'],
+  [/connection reset/i, 'verbinding verbroken'],
+  [/connection refused/i, 'verbinding geweigerd'],
+  [/IncompleteRead/, 'antwoord onvolledig'],
+  [/name or service not known|nodename nor servname|getaddrinfo/i, 'DNS-fout'],
+  [/certificate|ssl/i, 'TLS-fout'],
+];
+
 function detailText(detail) {
   if (!detail) return '';
   if (detail.startsWith('reachable (Cloudflare')) {
@@ -40,8 +49,8 @@ function detailText(detail) {
   }
   const unreachable = detail.match(/^unreachable: (.*)$/);
   if (unreachable) {
-    const reason = /timed out/i.test(unreachable[1]) ? 'time-out' : unreachable[1];
-    return `onbereikbaar: ${reason}`;
+    const known = UNREACHABLE_REASONS.find(([pattern]) => pattern.test(unreachable[1]));
+    return `onbereikbaar: ${known ? known[1] : unreachable[1]}`;
   }
   return detail;
 }
@@ -95,96 +104,131 @@ function formatDay(dateStr) {
   return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
-function dayStatus(day) {
-  if (!day || !day.runs) return 'none';
-  if (day.failed_runs === 0) return 'up';
+// The UTC days an incident of this service touched. A day is only amber when
+// an incident (INCIDENT_THRESHOLD consecutive failures in probe.py, ~10 min)
+// fell on it: one timed-out check out of ~290 painted whole days amber while
+// the incident list, by its own rule, stayed empty — two answers on one page.
+function incidentDays(key, incidents) {
+  const days = new Set();
+  for (const incident of incidents || []) {
+    if (incident.service !== key) continue;
+    const start = new Date(incident.started_at);
+    const end = incident.resolved_at ? new Date(incident.resolved_at) : new Date();
+    const d = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+    for (; d <= end; d.setUTCDate(d.getUTCDate() + 1)) days.add(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+function dayStatus(day, withIncident) {
+  if (day.before) return 'before';
+  if (!day.runs) return 'none';
   if (day.failed_runs === day.runs) return 'down';
-  return 'degraded';
+  if (withIncident) return 'degraded';
+  return 'up';
 }
 
 /* Index the stored history by date so the strip is built from the calendar,
  * not from the data. Days the collector never ran must show as gaps; drawing
- * only the days we have would silently compress an outage into a green run. */
+ * only the days we have would silently compress an outage into a green run.
+ * Days before a service's first check are a different thing — the host did
+ * not exist yet (.be went live 2026-09-26) — and are marked as such rather
+ * than shown as missing data. */
 function buildStrip(history) {
   const byDate = new Map((history || []).map((d) => [d.date, d]));
+  const first = (history || []).reduce((min, d) => (!min || d.date < min ? d.date : min), null);
   const days = [];
   const today = new Date();
   for (let i = WINDOW_DAYS - 1; i >= 0; i--) {
     const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
     const key = d.toISOString().slice(0, 10);
-    days.push(byDate.get(key) || { date: key, runs: 0, failed_runs: 0 });
+    days.push(byDate.get(key) || { date: key, runs: 0, failed_runs: 0, before: !first || key < first });
   }
   return days;
 }
 
-function uptimePct(history) {
-  const days = buildStrip(history).filter((d) => d.runs > 0);
-  if (!days.length) return null;
-  const runs = days.reduce((sum, d) => sum + d.runs, 0);
-  const failed = days.reduce((sum, d) => sum + d.failed_runs, 0);
-  const pct = ((runs - failed) / runs) * 100;
-  // Never round a real incident up to a flat 100 — see uptimeText below.
-  return pct < 100 && pct > 99.99 ? 99.99 : pct;
-}
+// The tip of a bar near either edge is anchored to that edge, or it runs off
+// a phone screen.
+const EDGE_BARS = 6;
 
-function uptimeText(pct) {
-  if (pct === null) return 'nog geen gegevens';
-  const shown = pct.toFixed(pct === 100 ? 0 : 2).replace('.', ',');
-  return `${shown}% van de checks geslaagd (laatste ${WINDOW_DAYS} dagen)`;
-}
-
-function renderStrip(history) {
+function renderStrip(key, history, incidents) {
+  const withIncident = incidentDays(key, incidents);
   const bars = el('div', 'bars');
-  for (const day of buildStrip(history)) {
+  const days = buildStrip(history);
+  days.forEach((day, index) => {
     const bar = el('div', 'bar');
-    const status = dayStatus(day);
-    bar.dataset.status = status;
+    const incident = withIncident.has(day.date);
+    bar.dataset.status = dayStatus(day, incident);
+    if (index < EDGE_BARS) bar.dataset.edge = 'start';
+    if (index >= days.length - EDGE_BARS) bar.dataset.edge = 'end';
 
     const lines = [formatDay(day.date)];
-    if (!day.runs) {
+    if (day.before) {
+      lines.push('Nog niet gemeten');
+    } else if (!day.runs) {
       lines.push('Geen checks vastgelegd');
     } else if (!day.failed_runs) {
       lines.push(`${day.runs} checks, alle geslaagd`);
     } else {
       lines.push(`${day.failed_runs} van ${day.runs} checks mislukt`);
+      if (!incident) lines.push(day.failed_runs === 1 ? 'losse check, geen incident' : 'losse checks, geen incident');
       if (day.first_failure && day.first_failure.detail) {
         lines.push(detailText(day.first_failure.detail));
       }
     }
+    // Focusable with a label, so the day is readable by keyboard, by screen
+    // reader and by tapping on a phone (a tap focuses), not by hover alone.
+    bar.tabIndex = 0;
+    bar.setAttribute('role', 'img');
+    bar.setAttribute('aria-label', lines.join(', '));
     const tip = el('div', 'tip');
+    tip.setAttribute('aria-hidden', 'true');
     lines.forEach((line, i) => {
       if (i > 0) tip.appendChild(document.createElement('br'));
       tip.appendChild(document.createTextNode(line));
     });
     bar.appendChild(tip);
     bars.appendChild(bar);
-  }
+  });
   return bars;
 }
 
-function renderService(service) {
-  const card = el('div', 'service');
+function serviceStatus(service) {
+  // A status from a check that is no longer recent says nothing about now.
+  if (!service.last_checked || minutesSince(service.last_checked) > STALE_AFTER_MINUTES) {
+    return 'none';
+  }
+  return service.status || 'none';
+}
+
+function renderService(key, service, incidents) {
+  const row = el('div', 'service');
 
   const head = el('div', 'service-head');
-  head.appendChild(el('span', 'service-name', service.name));
-  const status = el('span', 'service-status', STATUS_TEXT[service.status] || STATUS_TEXT.none);
-  status.dataset.status = service.status || 'none';
-  head.appendChild(status);
-  card.appendChild(head);
-
-  const meta = el(
-    'div',
-    'service-meta',
-    `${service.target || ''} · gecontroleerd ${ago(service.last_checked)}${
-      service.detail ? ` · ${detailText(service.detail)}` : ''
-    }`,
+  const name = el('span', 'service-name', service.name);
+  if (service.target) name.title = service.target;
+  head.appendChild(name);
+  const statusKey = serviceStatus(service);
+  const status = el(
+    'span',
+    'service-status',
+    statusKey === 'none' && service.last_checked ? 'Geen recente check' : STATUS_TEXT[statusKey],
   );
-  card.appendChild(meta);
+  status.dataset.status = statusKey;
+  head.appendChild(status);
+  row.appendChild(head);
 
-  card.appendChild(renderStrip(service.history));
-  card.appendChild(el('div', 'uptime', uptimeText(uptimePct(service.history))));
-
-  return card;
+  row.appendChild(renderStrip(key, service.history, incidents));
+  row.appendChild(
+    el(
+      'div',
+      'service-meta',
+      `Gecontroleerd ${ago(service.last_checked)}${
+        service.detail ? ` · ${detailText(service.detail)}` : ''
+      }`,
+    ),
+  );
+  return row;
 }
 
 function overallStatus(services) {
@@ -234,7 +278,7 @@ function renderSlaTable(summary) {
 
   const table = el('table', 'sla-table');
   const head = table.insertRow();
-  ['Maand', 'Beschikbaarheid', `Doel: ${nlNumber(summary.target_pct)}%`].forEach((h) => {
+  ['Maand', 'Beschikbaarheid', 'Uitval', `Doel: ${nlNumber(summary.target_pct)}%`].forEach((h) => {
     const th = document.createElement('th');
     th.textContent = h;
     head.appendChild(th);
@@ -245,6 +289,13 @@ function renderSlaTable(summary) {
     row.insertCell().textContent = slaMonthLabel(m);
     row.insertCell().textContent =
       m.availability_pct != null ? `${nlNumber(m.availability_pct)}%` : 'nog niet gemeten';
+    // Minutes say more than a fourth decimal: "4 min" is what a partner weighs.
+    row.insertCell().textContent =
+      m.downtime_minutes == null
+        ? '—'
+        : m.downtime_minutes === 0
+          ? 'geen'
+          : formatDuration(m.downtime_minutes * 60000);
     const verdict = row.insertCell();
     // A running month's `met` can still flip before it closes — reporting
     // "gehaald" on it would claim a verdict the month hasn't earned yet.
@@ -293,9 +344,16 @@ function renderSla(slaByHost) {
     const table = renderSlaTable(byHost[host]);
     if (!table) continue;
     container.appendChild(el('h3', 'sla-host', host.replace(/^www\./, '')));
-    container.appendChild(table);
+    container.appendChild(scrollable(table));
   }
   section.hidden = !container.children.length;
+}
+
+// A table wider than a phone scrolls inside its own box, never the page.
+function scrollable(table) {
+  const wrap = el('div', 'table-wrap');
+  wrap.appendChild(table);
+  return wrap;
 }
 
 // Freshness per chain (#1398): was each chain's data fresh at 07:00, and the
@@ -311,8 +369,43 @@ function pct(ratio) {
   return `${(Math.floor(ratio * 1000) / 10).toLocaleString('nl-NL')}%`;
 }
 
+function sortedRetailers(summary) {
+  return [...(summary.retailers || [])].sort((a, b) =>
+    (a.name || a.retailer).localeCompare(b.name || b.retailer, 'nl'),
+  );
+}
+
+// One line per host that answers the question a visitor comes with — was
+// this morning's data in? — and names any chain that was not. The full table
+// sits behind it: with every chain and month it is most of the page.
+function freshnessSummary(summary) {
+  const retailers = sortedRetailers(summary);
+  const day = retailers.reduce(
+    (max, r) => (r.latest && (!max || r.latest.day > max) ? r.latest.day : max),
+    null,
+  );
+  if (!day) return null;
+  const measured = retailers.filter((r) => r.latest && r.latest.day === day);
+  const notFresh = measured.filter((r) => !r.latest.fresh).map((r) => r.name || r.retailer);
+  const unmeasured = retailers
+    .filter((r) => !r.latest || r.latest.day !== day)
+    .map((r) => r.name || r.retailer);
+
+  const when = day === todayAmsterdam() ? 'Vanochtend' : `Op ${formatDay(day)}`;
+  const p = el('p', 'fresh-summary');
+  const fresh = measured.length - notFresh.length;
+  const lead = el('span', null, `${when}: ${fresh} van ${measured.length} ketens vers.`);
+  lead.className = notFresh.length ? 'missed' : 'met';
+  p.appendChild(lead);
+  if (notFresh.length) p.appendChild(document.createTextNode(` Niet vers: ${notFresh.join(', ')}.`));
+  if (unmeasured.length) {
+    p.appendChild(document.createTextNode(` Nog geen meting: ${unmeasured.join(', ')}.`));
+  }
+  return p;
+}
+
 function renderFreshnessTable(summary) {
-  const retailers = summary.retailers || [];
+  const retailers = sortedRetailers(summary);
   if (!retailers.length) return null;
   const today = todayAmsterdam();
   const current = today.slice(0, 7);
@@ -371,7 +464,12 @@ function renderFreshness(byHostData) {
     const table = renderFreshnessTable(byHost[host]);
     if (!table) continue;
     container.appendChild(el('h3', 'sla-host', host.replace(/^www\./, '')));
-    container.appendChild(table);
+    const summary = freshnessSummary(byHost[host]);
+    if (summary) container.appendChild(summary);
+    const details = el('details', 'fresh-details');
+    details.appendChild(el('summary', null, 'Per keten en per maand'));
+    details.appendChild(scrollable(table));
+    container.appendChild(details);
   }
   section.hidden = !container.children.length;
 }
@@ -446,13 +544,15 @@ function renderData(data) {
   const rank = (key) => (order.includes(key) ? order.indexOf(key) : order.length);
   const keys = Object.keys(data.services || {}).sort((a, b) => rank(a) - rank(b));
   let group = null;
+  let panel = null;
   for (const key of keys) {
     const service = data.services[key];
-    if (service.group && service.group !== group) {
+    if (!panel || service.group !== group) {
       group = service.group;
-      main.appendChild(el('h2', 'group-title', group));
+      if (group) main.appendChild(el('h2', 'group-title', group));
+      panel = main.appendChild(el('div', 'panel'));
     }
-    main.appendChild(renderService(service));
+    panel.appendChild(renderService(key, service, data.incidents));
   }
 
   renderIncidents(data.incidents);
