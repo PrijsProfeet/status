@@ -286,3 +286,142 @@ class TestFreshnessPerHost(unittest.TestCase):
                 "www.prijsprofeet.be": {"retailers": ["be"]},
             },
         )
+
+
+class TestDutchDetails(unittest.TestCase):
+    def test_known_urllib_errors_are_translated(self):
+        self.assertEqual(
+            probe.dutch_detail("unreachable: The read operation timed out"),
+            "onbereikbaar: time-out",
+        )
+        self.assertEqual(
+            probe.dutch_detail("unreachable: <urlopen error [Errno 104] Connection reset by peer>"),
+            "onbereikbaar: verbinding verbroken",
+        )
+
+    def test_an_unknown_reason_is_kept_verbatim(self):
+        self.assertEqual(probe.dutch_detail("unreachable: weird"), "onbereikbaar: weird")
+        self.assertEqual(probe.dutch_detail("HTTP 525"), "HTTP 525")
+
+    def test_translating_twice_changes_nothing(self):
+        once = probe.dutch_detail("unreachable: timed out")
+        self.assertEqual(probe.dutch_detail(once), once)
+
+    def test_stored_english_rows_are_translated_on_load(self):
+        data = _fresh_data()
+        _update_service(data, "api", "API", "url", CheckResult(False, "unreachable: timed out"))
+        data["services"]["api"]["detail"] = "unreachable: timed out"
+        data["incidents"] = [{"detail": "unreachable: timed out"}]
+        probe._translate_details(data)
+        self.assertEqual(data["services"]["api"]["detail"], "onbereikbaar: time-out")
+        self.assertEqual(
+            data["services"]["api"]["history"][0]["first_failure"]["detail"],
+            "onbereikbaar: time-out",
+        )
+        self.assertEqual(data["incidents"][0]["detail"], "onbereikbaar: time-out")
+
+
+class TestNotices(unittest.TestCase):
+    def _load(self, raw):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "notices.json"
+            path.write_text(raw if isinstance(raw, str) else json.dumps(raw))
+            return probe.load_notices(path)
+
+    def _notice(self, **over):
+        n = {
+            "id": "onderhoud-1",
+            "title": "Onderhoud",
+            "body": "De API is kort onbereikbaar.",
+            "published": "2026-10-09T09:00:00+02:00",
+        }
+        n.update(over)
+        return n
+
+    def test_the_committed_notices_file_is_valid(self):
+        # The workflow runs these tests before the probe, so a broken edit to
+        # notices.json turns the run red before it publishes anything.
+        probe.load_notices()
+
+    def test_a_valid_notice_loads(self):
+        [n] = self._load([self._notice(until="2026-10-09T12:00:00+02:00")])
+        self.assertEqual(n["id"], "onderhoud-1")
+        self.assertEqual(n["until"], "2026-10-09T12:00:00+02:00")
+
+    def test_a_missing_file_is_no_notices(self):
+        from pathlib import Path
+
+        self.assertEqual(probe.load_notices(Path("/nonexistent/notices.json")), [])
+
+    def test_broken_input_is_refused(self):
+        cases = [
+            "{not json",
+            {"id": "x"},
+            [self._notice(id="Met Spatie")],
+            [self._notice(), self._notice()],
+            [self._notice(title=" ")],
+            [self._notice(published="2026-10-09T09:00:00")],
+            [self._notice(published="morgen")],
+            [self._notice(until="2026-10-09T08:00:00+02:00")],
+            [self._notice(extra="x")],
+        ]
+        for raw in cases:
+            with self.subTest(raw=raw), self.assertRaises(probe.NoticeError):
+                self._load(raw)
+
+
+class TestFeed(unittest.TestCase):
+    INCIDENT = {
+        "service": "api_be",
+        "name": "API (België)",
+        "started_at": "2026-10-06T22:35:41+00:00",
+        "resolved_at": "2026-10-06T22:40:38+00:00",
+        "detail": "onbereikbaar: time-out",
+    }
+    NOTICE = {
+        "id": "onderhoud-1",
+        "title": "Onderhoud",
+        "body": "Kort onbereikbaar.",
+        "published": "2026-10-09T09:00:00+02:00",
+        "until": None,
+    }
+
+    def _parse(self, xml):
+        import xml.etree.ElementTree as ET
+
+        return ET.fromstring(xml)
+
+    def test_a_resolution_is_its_own_entry(self):
+        root = self._parse(probe.build_feed([self.INCIDENT], []))
+        titles = [e.findtext(f"{{{probe.ATOM_NS}}}title") for e in root.iter(f"{{{probe.ATOM_NS}}}entry")]
+        self.assertEqual(titles, ["Opgelost: API (België)", "Storing: API (België)"])
+
+    def test_an_open_incident_has_only_its_start(self):
+        open_incident = dict(self.INCIDENT, resolved_at=None)
+        root = self._parse(probe.build_feed([open_incident], []))
+        self.assertEqual(len(list(root.iter(f"{{{probe.ATOM_NS}}}entry"))), 1)
+
+    def test_times_are_amsterdam_and_the_text_is_dutch(self):
+        xml = probe.build_feed([self.INCIDENT], [])
+        self.assertIn("Begonnen 7 oktober 00:35", xml)
+        self.assertIn("na 5 min", xml)
+
+    def test_the_same_input_gives_the_same_bytes(self):
+        a = probe.build_feed([self.INCIDENT], [self.NOTICE])
+        b = probe.build_feed([dict(self.INCIDENT)], [dict(self.NOTICE)])
+        self.assertEqual(a, b)
+
+    def test_updated_follows_the_newest_entry_not_the_clock(self):
+        root = self._parse(probe.build_feed([self.INCIDENT], [self.NOTICE]))
+        self.assertEqual(root.findtext(f"{{{probe.ATOM_NS}}}updated"), self.NOTICE["published"])
+        empty = self._parse(probe.build_feed([], []))
+        self.assertEqual(empty.findtext(f"{{{probe.ATOM_NS}}}updated"), probe.FEED_EPOCH)
+
+    def test_markup_in_a_notice_is_escaped(self):
+        notice = dict(self.NOTICE, body="<script>x</script> & meer")
+        xml = probe.build_feed([], [notice])
+        self.assertNotIn("<script>", xml)
+        self._parse(xml)

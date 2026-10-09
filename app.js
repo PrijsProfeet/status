@@ -31,30 +31,6 @@ const STATUS_TEXT = {
   none: 'Geen gegevens',
 };
 
-// probe.py writes urllib's own (English) wording into `detail`, and the stored
-// history keeps it, so it is translated here, on display.
-const UNREACHABLE_REASONS = [
-  [/timed out/i, 'time-out'],
-  [/connection reset/i, 'verbinding verbroken'],
-  [/connection refused/i, 'verbinding geweigerd'],
-  [/IncompleteRead/, 'antwoord onvolledig'],
-  [/name or service not known|nodename nor servname|getaddrinfo/i, 'DNS-fout'],
-  [/certificate|ssl/i, 'TLS-fout'],
-];
-
-function detailText(detail) {
-  if (!detail) return '';
-  if (detail.startsWith('reachable (Cloudflare')) {
-    return 'bereikbaar (Cloudflare houdt geautomatiseerde checks hier bewust tegen)';
-  }
-  const unreachable = detail.match(/^unreachable: (.*)$/);
-  if (unreachable) {
-    const known = UNREACHABLE_REASONS.find(([pattern]) => pattern.test(unreachable[1]));
-    return `onbereikbaar: ${known ? known[1] : unreachable[1]}`;
-  }
-  return detail;
-}
-
 const MONTHS = new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 function monthLabel(month) {
@@ -173,7 +149,7 @@ function renderStrip(key, history, incidents) {
       lines.push(`${day.failed_runs} van ${day.runs} checks mislukt`);
       if (!incident) lines.push(day.failed_runs === 1 ? 'losse check, geen incident' : 'losse checks, geen incident');
       if (day.first_failure && day.first_failure.detail) {
-        lines.push(detailText(day.first_failure.detail));
+        lines.push(day.first_failure.detail);
       }
     }
     // Focusable with a label, so the day is readable by keyboard, by screen
@@ -224,7 +200,7 @@ function renderService(key, service, incidents) {
       'div',
       'service-meta',
       `Gecontroleerd ${ago(service.last_checked)}${
-        service.detail ? ` · ${detailText(service.detail)}` : ''
+        service.detail ? ` · ${service.detail}` : ''
       }`,
     ),
   );
@@ -493,6 +469,31 @@ function formatDateTime(iso) {
   });
 }
 
+// Hand-written notices from notices.json (validated by probe.py). Only the
+// ones in force now are shown; the feed keeps them all.
+function renderNotices(notices) {
+  const section = document.getElementById('notices');
+  const now = Date.now();
+  const current = (notices || []).filter(
+    (n) => new Date(n.published) <= now && (!n.until || new Date(n.until) > now),
+  );
+  section.hidden = !current.length;
+  section.innerHTML = '';
+  for (const n of current) {
+    const item = el('div', 'notice');
+    item.appendChild(el('div', 'notice-title', n.title));
+    item.appendChild(el('div', 'notice-body', n.body));
+    item.appendChild(
+      el(
+        'div',
+        'incident-meta',
+        `Geplaatst ${formatDateTime(n.published)}${n.until ? ` · geldt tot ${formatDateTime(n.until)}` : ''}`,
+      ),
+    );
+    section.appendChild(item);
+  }
+}
+
 function renderIncidents(incidents) {
   const section = document.getElementById('incidents');
   const list = (incidents || []).slice(0, 20);
@@ -521,7 +522,7 @@ function renderIncidents(incidents) {
           new Date(incident.resolved_at) - new Date(incident.started_at),
         )}`;
     li.appendChild(el('div', 'incident-meta', `${duration}${
-      incident.detail ? ` — ${detailText(incident.detail)}` : ''
+      incident.detail ? ` — ${incident.detail}` : ''
     }`));
 
     ul.appendChild(li);
@@ -555,6 +556,7 @@ function renderData(data) {
     panel.appendChild(renderService(key, service, data.incidents));
   }
 
+  renderNotices(data.notices);
   renderIncidents(data.incidents);
   renderSla(data.sla);
   renderFreshness(data.freshness);

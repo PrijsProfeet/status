@@ -253,3 +253,19 @@ a { color: inherit; }
   margin: 24px 0 10px;
 }
 .group-title:first-child { margin-top: 0; }
+
+/* Hand-written notices: above everything else, because they explain it. */
+.notices { margin-bottom: 24px; }
+
+.notice {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--degraded);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.notice-title { font-weight: 600; }
+.notice-body { margin-top: 2px; white-space: pre-line; }

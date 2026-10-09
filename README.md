@@ -22,6 +22,41 @@ monitors answers "up" from inside the very outage it should report.
   itself can't be taken down by anything failing elsewhere.
 - Served by GitHub Pages at `status.prijsprofeet.nl`.
 
+## Atom feed and notices
+
+`probe.py` also writes `data/incidents.xml`, an Atom feed at
+`https://status.prijsprofeet.nl/data/incidents.xml`: one entry when an
+incident opens and a separate one when it is resolved (a feed reader notifies
+on a new entry, not on an updated one), plus every notice. The feed only
+changes when an entry does, never on the clock.
+
+Notices are what the probe cannot see: planned maintenance, or a chain whose
+source is down. Add one to `notices.json` in a normal commit; the push runs
+the workflow, which validates the file (the unit tests load it) and publishes
+it within a minute or two:
+
+```json
+[
+  {
+    "id": "onderhoud-2026-10-12",
+    "title": "Gepland onderhoud aan de API",
+    "body": "Zondag tussen 07:00 en 07:15 kan de API kort onbereikbaar zijn.",
+    "published": "2026-10-09T09:00:00+02:00",
+    "until": "2026-10-12T07:15:00+02:00"
+  }
+]
+```
+
+`id` (lowercase, digits, hyphens) is the feed entry's identity: never reuse
+or change it. `published` and `until` need an offset. The page shows a notice
+from `published` until `until` (or forever without one); the feed keeps it.
+Remove a notice from the file only once it is old news. A broken file keeps
+the last valid notices published and turns the run red.
+
+The feed is public on purpose. Everything in it is already on this page, and
+a feed behind a key would have to run on the box whose outage it reports.
+What Business customers get on top is a mail, sent to them (not built yet).
+
 This is **not** the contractual SLA measurement. The Business-tier 99,5% is
 measured by `blackbox-exporter` against the same `/api/v1/ready` endpoint,
 scraped by Prometheus every 30s and scored in prijsprofeet's own

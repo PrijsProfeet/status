@@ -10,7 +10,7 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - "data/status.json"
+      - "data/**"
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "prijsprofeet-status-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/status.json
+          git add data/
           git diff --cached --quiet && exit 0
           git commit -m "status: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           # The schedule and the external dispatch both fire every 5 minutes,
@@ -65,19 +65,19 @@ jobs:
             git reset --hard origin/main
             # The stall verdict is reported by the first probe's step outcome.
             python3 collector/probe.py || true
-            git add data/status.json
+            git add data/
             git diff --cached --quiet && exit 0
             git commit -m "status: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           done
           echo "::error::could not push status.json after 3 attempts"
           exit 1
 
-      - name: Fail loudly on a stalled pipeline
+      - name: Fail loudly on a stalled pipeline or a broken notices.json
         # Runs after the commit above, so a stall is still visible on the
         # page (fresh data got published) while also marking this run red —
         # which is what makes GitHub email the people watching this repo,
         # with no new secret or external service needed for that alert.
         if: steps.probe.outcome == 'failure'
         run: |
-          echo "::error::probe.py detected a stalled pipeline (see its own log output above). Data was still committed; failing only to surface the gap."
+          echo "::error::probe.py reported a stalled pipeline or an invalid notices.json (see its own log output above). Data was still committed; failing only to surface the problem."
           exit 1
