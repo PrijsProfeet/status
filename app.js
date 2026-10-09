@@ -80,7 +80,7 @@ function formatDay(dateStr) {
   return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
-// The UTC days an incident of this service touched. A day is only amber when
+// The days (Dutch/Belgian time) an incident of this service touched. A day is only amber when
 // an incident (INCIDENT_THRESHOLD consecutive failures in probe.py, ~10 min)
 // fell on it: one timed-out check out of ~290 painted whole days amber while
 // the incident list, by its own rule, stayed empty — two answers on one page.
@@ -90,10 +90,36 @@ function incidentDays(key, incidents) {
     if (incident.service !== key) continue;
     const start = new Date(incident.started_at);
     const end = incident.resolved_at ? new Date(incident.resolved_at) : new Date();
-    const d = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
-    for (; d <= end; d.setUTCDate(d.getUTCDate() + 1)) days.add(d.toISOString().slice(0, 10));
+    for (let day = dayKey(start); day <= dayKey(end); day = addDays(day, 1)) days.add(day);
   }
   return days;
+}
+
+// probe.py keyed its buckets on UTC days until this date and on Dutch/Belgian
+// days from it. The switch is exact: UTC day 2026-10-09 ended at 22:00 UTC,
+// which is local midnight, so 10-09 holds 22 hours and no check counts twice.
+// An older bar must look its incidents up in UTC too, or the 00:35 outage of
+// 2026-10-07 turns the 07 bar amber while its failures sit in the 06 bucket.
+const LOCAL_DAYS_FROM = '2026-10-10';
+
+function dayKey(instant) {
+  const utc = instant.toISOString().slice(0, 10);
+  return utc < LOCAL_DAYS_FROM ? utc : localDay(instant);
+}
+
+// Days are keyed in Dutch/Belgian time (one timezone), matching probe.py's
+// history buckets, the SLA months and the freshness mornings.
+function localDay(instant) {
+  // sv-SE formats as YYYY-MM-DD.
+  return instant.toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+}
+
+// Calendar arithmetic on a YYYY-MM-DD key, done in UTC so no DST shift can
+// skip or repeat a day.
+function addDays(key, n) {
+  const d = new Date(`${key}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 }
 
 function dayStatus(day, withIncident) {
@@ -114,10 +140,9 @@ function buildStrip(history) {
   const byDate = new Map((history || []).map((d) => [d.date, d]));
   const first = (history || []).reduce((min, d) => (!min || d.date < min ? d.date : min), null);
   const days = [];
-  const today = new Date();
+  const today = localDay(new Date());
   for (let i = WINDOW_DAYS - 1; i >= 0; i--) {
-    const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
-    const key = d.toISOString().slice(0, 10);
+    const key = addDays(today, -i);
     days.push(byDate.get(key) || { date: key, runs: 0, failed_runs: 0, before: !first || key < first });
   }
   return days;
@@ -298,7 +323,7 @@ function slaMonthLabel(m) {
   const label = monthLabel(m.month);
   if (!m.partial || !m.measured_from) return label;
   const from = new Date(m.measured_from);
-  const fromDay = from.toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+  const fromDay = localDay(from);
   if (fromDay === `${m.month}-01`) return label;
   const shown = from.toLocaleDateString('nl-NL', {
     day: 'numeric',
@@ -336,8 +361,7 @@ function scrollable(table) {
 // share of fresh nights per calendar month against the norm. Per host, like
 // the SLA: .be has its own chains. Only fresh or not, never the reason.
 function todayAmsterdam() {
-  // sv-SE formats as YYYY-MM-DD, the shape the API's `day` field uses.
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+  return localDay(new Date());
 }
 
 function pct(ratio) {
