@@ -80,20 +80,27 @@ header { margin-bottom: 16px; }
 .banner[data-status="down"] .dot { background: var(--down); }
 .banner[data-status="down"] { color: var(--down); }
 
-.service {
+/* One panel per country, one compact row per service inside it. */
+.panel {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: 0 16px;
 }
+
+.service {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.service:first-child { border-top: 0; }
 
 .service-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .service-name { font-weight: 600; }
@@ -111,7 +118,7 @@ header { margin-bottom: 16px; }
 .service-meta {
   color: var(--text-dim);
   font-size: 0.8rem;
-  margin-bottom: 10px;
+  margin-top: 6px;
 }
 
 .bars {
@@ -121,7 +128,7 @@ header { margin-bottom: 16px; }
 
 .bar {
   flex: 1;
-  height: 32px;
+  height: 24px;
   border-radius: 3px;
   background: var(--none);
   position: relative;
@@ -132,11 +139,19 @@ header { margin-bottom: 16px; }
 .bar[data-status="degraded"] { background: var(--degraded); }
 .bar[data-status="down"] { background: var(--down); }
 .bar[data-status="none"] { background: var(--border); }
+/* Before the host existed: an outline, so it never reads as missing data. */
+.bar[data-status="before"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.bar:focus { outline: none; }
+.bar:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
 
 .bar .tip {
   display: none;
   position: absolute;
-  bottom: 40px;
+  bottom: 32px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--text);
@@ -148,9 +163,11 @@ header { margin-bottom: 16px; }
   z-index: 1;
 }
 
-.bar:hover .tip { display: block; }
+.bar:hover .tip,
+.bar:focus .tip { display: block; }
 
-.uptime { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
+.bar[data-edge="start"] .tip { left: 0; transform: none; }
+.bar[data-edge="end"] .tip { left: auto; right: 0; transform: none; }
 
 .incidents { margin-top: 24px; }
 .incidents h2 { font-size: 1.05rem; }
@@ -206,6 +223,19 @@ header { margin-bottom: 16px; }
 
 .sla-table td.met { color: var(--up); }
 .sla-table td.missed { color: var(--down); }
+
+.table-wrap { overflow-x: auto; }
+
+.fresh-summary { margin: 0 0 8px; font-size: 0.9rem; }
+.fresh-summary .met { color: var(--up); font-weight: 600; }
+.fresh-summary .missed { color: var(--down); font-weight: 600; }
+
+.fresh-details summary {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
 
 footer {
   margin-top: 32px;
