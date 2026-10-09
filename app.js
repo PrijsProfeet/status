@@ -9,22 +9,48 @@ const WINDOW_DAYS = 31;
 // The collector commits new data roughly every 5 minutes; polling faster
 // than that only spends the visitor's battery and GitHub Pages' bandwidth
 // on refetching a file that hasn't changed. Polling slower would mean a
-// visitor who leaves the tab open during an outage sits on a stale "All
-// systems operational" for longer than the collector itself needed.
+// visitor who leaves the tab open during an outage sits on a stale "Alles werkt"
+// for longer than the collector itself needed.
 const POLL_INTERVAL_MS = 60_000;
-// The "Updated N minutes ago" line goes stale even between polls; refreshing
+// The "Bijgewerkt N minuten geleden" line goes stale even between polls; refreshing
 // just that text needs no network call at all.
 const CLOCK_TICK_MS = 15_000;
+// The collector runs every 5 minutes, and GitHub can delay a scheduled run.
+// Past this age the data no longer says anything about now, so the banner
+// must stop reporting a status: a stalled collector would otherwise leave the
+// page green through the very outage it should show.
+const STALE_AFTER_MINUTES = 20;
 
 let lastData = null;
 let lastFetchedAt = 0;
 
 const STATUS_TEXT = {
-  up: 'Operational',
-  degraded: 'Degraded',
-  down: 'Outage',
-  none: 'No data',
+  up: 'In orde',
+  degraded: 'Verstoord',
+  down: 'Storing',
+  none: 'Geen gegevens',
 };
+
+// probe.py writes urllib's own (English) wording into `detail`, and the stored
+// history keeps it, so it is translated here, on display.
+function detailText(detail) {
+  if (!detail) return '';
+  if (detail.startsWith('reachable (Cloudflare')) {
+    return 'bereikbaar (Cloudflare houdt geautomatiseerde checks hier bewust tegen)';
+  }
+  const unreachable = detail.match(/^unreachable: (.*)$/);
+  if (unreachable) {
+    const reason = /timed out/i.test(unreachable[1]) ? 'time-out' : unreachable[1];
+    return `onbereikbaar: ${reason}`;
+  }
+  return detail;
+}
+
+const MONTHS = new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+function monthLabel(month) {
+  return MONTHS.format(new Date(`${month}-01T00:00:00Z`));
+}
 
 async function getJSON(path) {
   // Cache-busted: a reload is supposed to show the last few minutes, and a
@@ -42,22 +68,31 @@ function el(tag, className, text) {
 }
 
 function ago(iso) {
-  if (!iso) return 'never';
-  const then = new Date(iso);
-  const mins = Math.round((Date.now() - then.getTime()) / 60000);
-  if (!Number.isFinite(mins)) return 'unknown';
-  if (mins < 1) return 'just now';
-  if (mins === 1) return '1 minute ago';
-  if (mins < 60) return `${mins} minutes ago`;
+  if (!iso) return 'nooit';
+  const mins = minutesSince(iso);
+  if (!Number.isFinite(mins)) return 'onbekend';
+  if (mins < 1) return 'zojuist';
+  if (mins === 1) return '1 minuut geleden';
+  if (mins < 60) return `${mins} minuten geleden`;
   const hrs = Math.round(mins / 60);
-  if (hrs === 1) return '1 hour ago';
-  if (hrs < 48) return `${hrs} hours ago`;
-  return `${Math.round(hrs / 24)} days ago`;
+  if (hrs === 1) return '1 uur geleden';
+  if (hrs < 48) return `${hrs} uur geleden`;
+  return `${Math.round(hrs / 24)} dagen geleden`;
+}
+
+function minutesSince(iso) {
+  return Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+}
+
+function isStale(data) {
+  if (!data.generated_at) return true;
+  const mins = minutesSince(data.generated_at);
+  return !Number.isFinite(mins) || mins > STALE_AFTER_MINUTES;
 }
 
 function formatDay(dateStr) {
   const d = new Date(`${dateStr}T00:00:00Z`);
-  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
 function dayStatus(day) {
@@ -93,8 +128,9 @@ function uptimePct(history) {
 }
 
 function uptimeText(pct) {
-  if (pct === null) return 'no data yet';
-  return `${pct.toFixed(pct === 100 ? 0 : 2)}% uptime (last ${WINDOW_DAYS} days)`;
+  if (pct === null) return 'nog geen gegevens';
+  const shown = pct.toFixed(pct === 100 ? 0 : 2).replace('.', ',');
+  return `${shown}% van de checks geslaagd (laatste ${WINDOW_DAYS} dagen)`;
 }
 
 function renderStrip(history) {
@@ -106,13 +142,13 @@ function renderStrip(history) {
 
     const lines = [formatDay(day.date)];
     if (!day.runs) {
-      lines.push('No checks recorded');
+      lines.push('Geen checks vastgelegd');
     } else if (!day.failed_runs) {
-      lines.push(`${day.runs} checks, all passed`);
+      lines.push(`${day.runs} checks, alle geslaagd`);
     } else {
-      lines.push(`${day.failed_runs} of ${day.runs} checks failed`);
+      lines.push(`${day.failed_runs} van ${day.runs} checks mislukt`);
       if (day.first_failure && day.first_failure.detail) {
-        lines.push(day.first_failure.detail);
+        lines.push(detailText(day.first_failure.detail));
       }
     }
     const tip = el('div', 'tip');
@@ -131,7 +167,7 @@ function renderService(service) {
 
   const head = el('div', 'service-head');
   head.appendChild(el('span', 'service-name', service.name));
-  const status = el('span', 'service-status', STATUS_TEXT[service.status] || 'No data');
+  const status = el('span', 'service-status', STATUS_TEXT[service.status] || STATUS_TEXT.none);
   status.dataset.status = service.status || 'none';
   head.appendChild(status);
   card.appendChild(head);
@@ -139,8 +175,8 @@ function renderService(service) {
   const meta = el(
     'div',
     'service-meta',
-    `${service.target || ''} · checked ${ago(service.last_checked)}${
-      service.detail ? ` · ${service.detail}` : ''
+    `${service.target || ''} · gecontroleerd ${ago(service.last_checked)}${
+      service.detail ? ` · ${detailText(service.detail)}` : ''
     }`,
   );
   card.appendChild(meta);
@@ -159,22 +195,35 @@ function overallStatus(services) {
   return 'degraded';
 }
 
-function renderBanner(services) {
+function renderBanner(data) {
   const banner = document.getElementById('banner');
-  const status = overallStatus(services);
+  const text = banner.querySelector('.banner-text');
+  if (isStale(data)) {
+    banner.dataset.status = 'none';
+    text.textContent = data.generated_at
+      ? `Gegevens verouderd: de laatste check was ${ago(data.generated_at)}`
+      : 'Geen gegevens';
+    return;
+  }
+  const status = overallStatus(data.services || {});
   banner.dataset.status = status;
-  const text = {
-    up: 'All systems operational',
-    degraded: 'Partial outage',
-    down: 'Major outage',
-    none: 'No data',
+  text.textContent = {
+    up: 'Alles werkt',
+    degraded: 'Gedeeltelijke storing',
+    down: 'Storing',
+    none: 'Geen gegevens',
   }[status];
-  banner.querySelector('.banner-text').textContent = text;
 }
 
 // The Business SLA is owed per host and scored per host (#1242): one table
 // each, never an average. .nl first; its history is the longest.
 const SLA_HOSTS = ['www.prijsprofeet.nl', 'www.prijsprofeet.be'];
+
+// Verbatim digits, only the decimal separator changes: rounding 99,9665 would
+// make a figure the API states look more (or less) exact than it is.
+function nlNumber(n) {
+  return String(n).replace('.', ',');
+}
 
 function renderSlaTable(summary) {
   // Months before the probe existed (`measured: false`) will never carry a
@@ -185,7 +234,7 @@ function renderSlaTable(summary) {
 
   const table = el('table', 'sla-table');
   const head = table.insertRow();
-  ['Maand', 'Beschikbaarheid', `Doel: ${summary.target_pct}%`].forEach((h) => {
+  ['Maand', 'Beschikbaarheid', `Doel: ${nlNumber(summary.target_pct)}%`].forEach((h) => {
     const th = document.createElement('th');
     th.textContent = h;
     head.appendChild(th);
@@ -193,9 +242,9 @@ function renderSlaTable(summary) {
 
   for (const m of months) {
     const row = table.insertRow();
-    row.insertCell().textContent = m.month;
+    row.insertCell().textContent = slaMonthLabel(m);
     row.insertCell().textContent =
-      m.availability_pct != null ? `${m.availability_pct}%` : 'nog niet gemeten';
+      m.availability_pct != null ? `${nlNumber(m.availability_pct)}%` : 'nog niet gemeten';
     const verdict = row.insertCell();
     // A running month's `met` can still flip before it closes — reporting
     // "gehaald" on it would claim a verdict the month hasn't earned yet.
@@ -212,6 +261,24 @@ function renderSlaTable(summary) {
     }
   }
   return table;
+}
+
+// A month the probe did not cover from its first day (a host that went live
+// mid-month, or the month the probe started) says so: 99,99% over five days
+// is not the same claim as over a whole month. The running month is partial
+// only because it has not ended, which "loopt nog" already says.
+function slaMonthLabel(m) {
+  const label = monthLabel(m.month);
+  if (!m.partial || !m.measured_from) return label;
+  const from = new Date(m.measured_from);
+  const fromDay = from.toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+  if (fromDay === `${m.month}-01`) return label;
+  const shown = from.toLocaleDateString('nl-NL', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'Europe/Amsterdam',
+  });
+  return `${label} (gemeten vanaf ${shown})`;
 }
 
 function renderSla(slaByHost) {
@@ -255,7 +322,7 @@ function renderFreshnessTable(summary) {
 
   const table = el('table', 'sla-table');
   const head = table.insertRow();
-  ['Keten', 'Om 07:00', ...months.map((m) => (m === current ? `${m} (loopt nog)` : m))].forEach(
+  ['Keten', 'Om 07:00', ...months.map((m) => monthLabel(m) + (m === current ? ' (loopt nog)' : ''))].forEach(
     (h) => {
       const th = document.createElement('th');
       th.textContent = h;
@@ -356,7 +423,7 @@ function renderIncidents(incidents) {
           new Date(incident.resolved_at) - new Date(incident.started_at),
         )}`;
     li.appendChild(el('div', 'incident-meta', `${duration}${
-      incident.detail ? ` — ${incident.detail}` : ''
+      incident.detail ? ` — ${detailText(incident.detail)}` : ''
     }`));
 
     ul.appendChild(li);
@@ -364,12 +431,12 @@ function renderIncidents(incidents) {
 }
 
 function renderData(data) {
-  document.getElementById('checked').textContent = `Updated ${ago(data.generated_at)}`;
+  document.getElementById('checked').textContent = `Bijgewerkt ${ago(data.generated_at)}`;
   document.getElementById('build').textContent = data.generated_at
-    ? `Last probe run: ${new Date(data.generated_at).toISOString()}`
+    ? `Laatste check: ${formatDateTime(data.generated_at)}`
     : '';
 
-  renderBanner(data.services || {});
+  renderBanner(data);
 
   const main = document.getElementById('services');
   main.innerHTML = '';
@@ -393,12 +460,14 @@ function renderData(data) {
   renderFreshness(data.freshness);
 }
 
-/* Re-renders the "Updated N ago" line between polls, without a network
+/* Re-renders the "Bijgewerkt N geleden" line between polls, without a network
  * call — so the page doesn't need a fresh fetch just to stop lying about
  * how old the data on screen is. */
 function tickClock() {
   if (!lastData) return;
-  document.getElementById('checked').textContent = `Updated ${ago(lastData.generated_at)}`;
+  document.getElementById('checked').textContent = `Bijgewerkt ${ago(lastData.generated_at)}`;
+  // The banner turns stale between polls too, without a new fetch.
+  renderBanner(lastData);
 }
 
 async function refresh() {
@@ -412,7 +481,7 @@ async function refresh() {
     // real (if slightly stale) status with "could not load" on a single
     // failed poll would be a worse answer than the one already showing.
     if (!lastData) {
-      document.getElementById('checked').textContent = 'Could not load status data';
+      document.getElementById('checked').textContent = 'Statusgegevens konden niet worden geladen';
     }
   }
 }
