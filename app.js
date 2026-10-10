@@ -391,7 +391,7 @@ function freshnessSummary(summary) {
     .filter((r) => !r.latest || r.latest.day !== day)
     .map((r) => r.name || r.retailer);
 
-  const when = day === todayAmsterdam() ? 'Vanochtend' : `Op ${formatDay(day)}`;
+  const when = day === todayAmsterdam() ? `Vanochtend (${formatDay(day)})` : `Op ${formatDay(day)}`;
   const p = el('p', 'fresh-summary');
   const fresh = measured.length - notFresh.length;
   const lead = el('span', null, `${when}: ${fresh} van ${measured.length} ketens vers.`);
