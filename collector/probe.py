@@ -67,11 +67,9 @@ HISTORY_DAYS = 45
 # #954). At a 5-minute cadence this is ~10 minutes down — long enough that a
 # single transient timeout doesn't open (and immediately close) an "incident"
 # on every network hiccup, short enough that a real outage is still caught
-# well inside its own window. This only ever sees what THIS probe checks
-# (reachability of / and /api/v1/ready) — it has no view of the internal
-# Prometheus alerts (EANCoverageDrop, ForecastMiscalibrated, ...); wiring
-# those in is the Alertmanager-bridge half of #954, deliberately not built
-# here (would need a new credential on the box for no clear benefit yet).
+# well inside its own window. This counts only what THIS probe checks
+# (reachability of / and /api/v1/ready); what Prometheus sees on top comes in
+# through fetch_alerts below.
 INCIDENT_THRESHOLD = 2
 
 # Keep a long tail of resolved incidents so a visitor can see the track
@@ -315,6 +313,79 @@ def _update_freshness_incidents(
             )
         elif fresh and ongoing is not None and at > ongoing["started_at"]:
             ongoing["resolved_at"] = at
+
+
+def fetch_alerts(base_url: str) -> Optional[list[dict[str, Any]]]:
+    """The outages Prometheus reports for ONE host right now (#954): an API that
+    is slow, a share of requests failing, search down. The app publishes only
+    the alerts marked public in its alerts.yml, with a Dutch title, never the
+    internal text. Pulled, not pushed, so the box holds no key to this repo.
+
+    None means "no answer" (the box is down, or Prometheus is), and then the
+    open alert incidents stay as they are: only an answer that no longer lists
+    an alert closes it. Like the SLA, an answer naming another host is refused."""
+    status, _headers, body, error = _fetch(f"{base_url}/api/v1/status/incidents")
+    if error or status != 200:
+        return None
+    try:
+        answer = json.loads(body)
+    except json.JSONDecodeError:
+        return None
+    host = base_url.removeprefix("https://")
+    if not isinstance(answer, dict) or answer.get("host") != host:
+        return None
+    alerts = answer.get("incidents")
+    if not isinstance(alerts, list):
+        return None
+    valid = []
+    for alert in alerts:
+        try:
+            datetime.fromisoformat(alert["since"])
+        except (KeyError, TypeError, ValueError):
+            return None
+        if not isinstance(alert.get("id"), str) or not isinstance(alert.get("title"), str):
+            return None
+        valid.append(alert)
+    return valid
+
+
+def _update_alert_incidents(
+    data: dict[str, Any],
+    host: str,
+    group: str,
+    alerts: Optional[list[dict[str, Any]]],
+    checked_at: str,
+) -> None:
+    """One incident per public alert, in the same list as the probe's own, so it
+    is on the page and in the feed like any other. It starts when Prometheus
+    says the condition began, not when this probe first saw it."""
+    if alerts is None:
+        return
+    current = {f"alert:{a['id']}:{host}": a for a in alerts}
+    open_keys = set()
+    for incident in data["incidents"]:
+        key = incident["service"]
+        if incident["resolved_at"] is not None or incident.get("host") != host:
+            continue
+        if not key.startswith("alert:"):
+            continue
+        if key in current:
+            open_keys.add(key)
+        else:
+            incident["resolved_at"] = checked_at
+    for key, alert in current.items():
+        if key in open_keys:
+            continue
+        data["incidents"].append(
+            {
+                "service": key,
+                "host": host,
+                "name": f"{alert['title']} ({group})" if group else alert["title"],
+                "started_at": alert["since"],
+                "resolved_at": None,
+                "detail": None,
+            }
+        )
 
 
 def _stall_minutes(previous_generated_at: Optional[str], now: datetime) -> Optional[float]:
@@ -681,6 +752,9 @@ def main() -> int:
         freshness = fetch_freshness(base_url)
         _update_freshness(data, host, freshness)
         _update_freshness_incidents(data, host, group, freshness)
+        _update_alert_incidents(
+            data, host, group, fetch_alerts(base_url), now.isoformat()
+        )
 
     _prune_incidents(data)
     _translate_details(data)
