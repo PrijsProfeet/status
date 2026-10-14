@@ -26,7 +26,11 @@ monitors answers "up" from inside the very outage it should report.
   updated JSON straight to `main`.
 - `index.html` / `app.js` / `styles.css` render `data/status.json` — no
   framework, no build step, no network calls off this origin, so the page
-  itself can't be taken down by anything failing elsewhere.
+  itself can't be taken down by anything failing elsewhere. The one
+  exception is the Umami tracker (`pp-metrics.js` from www.prijsprofeet.nl,
+  its own site id), loaded `async`: when the box is down it does not load and
+  the page renders as before. Visits during an outage are therefore not
+  counted.
 - Served by GitHub Pages at `status.prijsprofeet.nl`.
 
 ## Atom feed and notices
