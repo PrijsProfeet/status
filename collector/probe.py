@@ -266,6 +266,57 @@ def _update_freshness(
         freshness[host] = summary
 
 
+FRESHNESS_DETAIL = "data van vannacht niet bijgewerkt om {fresh_by}"
+
+
+def _update_freshness_incidents(
+    data: dict[str, Any], host: str, group: str, summary: Optional[dict[str, Any]]
+) -> None:
+    """A chain that is not fresh at fresh_by (07:00) is an incident on the page
+    and in the feed, closed on the first morning it is fresh again. The probe
+    used to report only our own hosts, so a chain whose data stood still for
+    days (Albert Heijn from 12 Oct 2026) showed on the page but never reached a
+    feed reader. One incident per chain per host: the same chain can be stale
+    in one storefront only.
+
+    Both ends sit at fresh_by of the measured day, because that is the moment
+    the measurement makes its claim. A failed fetch changes nothing, like the
+    SLA: an open incident stays open until an answer says otherwise."""
+    if summary is None:
+        return
+    fresh_by = summary.get("fresh_by") or "07:00"
+    hour, minute = (int(x) for x in fresh_by.split(":"))
+    for chain in summary.get("retailers", []):
+        latest = chain.get("latest") or {}
+        day, fresh = latest.get("day"), latest.get("fresh")
+        if not isinstance(day, str) or not isinstance(fresh, bool):
+            continue
+        at = (
+            datetime.fromisoformat(day)
+            .replace(hour=hour, minute=minute, tzinfo=AMSTERDAM)
+            .astimezone(timezone.utc)
+            .isoformat()
+        )
+        key = f"versheid:{chain['retailer']}:{host}"
+        ongoing = next(
+            (i for i in data["incidents"] if i["service"] == key and i["resolved_at"] is None),
+            None,
+        )
+        if not fresh and ongoing is None:
+            data["incidents"].append(
+                {
+                    "service": key,
+                    "kind": "versheid",
+                    "name": f"{chain.get('name') or chain['retailer']} ({group})",
+                    "started_at": at,
+                    "resolved_at": None,
+                    "detail": FRESHNESS_DETAIL.format(fresh_by=fresh_by),
+                }
+            )
+        elif fresh and ongoing is not None and at > ongoing["started_at"]:
+            ongoing["resolved_at"] = at
+
+
 def _stall_minutes(previous_generated_at: Optional[str], now: datetime) -> Optional[float]:
     """Minutes since the last successful run, or None on the very first run
     ever (no previous data to compare against — not a stall)."""
@@ -501,7 +552,37 @@ def _duration(start: str, end: str) -> str:
     if minutes < 60:
         return f"{minutes} min"
     hours, rest = divmod(minutes, 60)
+    if hours >= 24:
+        days, hours = divmod(hours, 24)
+        text = f"{days} dag" if days == 1 else f"{days} dagen"
+        return f"{text} {hours} u" if hours else text
     return f"{hours} u {rest} min" if rest else f"{hours} u"
+
+
+def _freshness_entries(i: dict[str, Any], key: str) -> list[dict[str, str]]:
+    """The feed's words for a chain that was not fresh: the data stood still,
+    our API did not go down."""
+    entries = [{
+        "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:begin",
+        "title": f"Niet vers: {i['name']}",
+        "at": i["started_at"],
+        "text": (
+            f"Om {_when(i['started_at'])} was de data van deze keten niet "
+            "bijgewerkt. Tot hij weer vers is kunnen zijn prijzen verouderd zijn."
+        ),
+    }]
+    if i.get("resolved_at"):
+        entries.append({
+            "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:einde",
+            "title": f"Weer vers: {i['name']}",
+            "at": i["resolved_at"],
+            "text": (
+                f"Weer vers {_when(i['resolved_at'])}, na "
+                f"{_duration(i['started_at'], i['resolved_at'])} "
+                f"(niet vers sinds {_when(i['started_at'])})."
+            ),
+        })
+    return entries
 
 
 def _feed_entries(
@@ -513,6 +594,9 @@ def _feed_entries(
     entries = []
     for i in incidents:
         key = f"{i['service']}:{i['started_at']}"
+        if i.get("kind") == "versheid":
+            entries.extend(_freshness_entries(i, key))
+            continue
         cause = f" Oorzaak volgens de check: {i['detail']}." if i.get("detail") else ""
         entries.append({
             "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:begin",
@@ -591,10 +675,12 @@ def main() -> int:
             with_retry(check_api, base_url), group,
         )
 
-    for _group, base_url, _suffix in SITES:
+    for group, base_url, _suffix in SITES:
         host = base_url.removeprefix("https://")
         _update_sla(data, host, fetch_sla_summary(base_url))
-        _update_freshness(data, host, fetch_freshness(base_url))
+        freshness = fetch_freshness(base_url)
+        _update_freshness(data, host, freshness)
+        _update_freshness_incidents(data, host, group, freshness)
 
     _prune_incidents(data)
     _translate_details(data)

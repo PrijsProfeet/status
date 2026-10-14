@@ -480,6 +480,12 @@ function formatDuration(ms) {
   if (mins < 60) return `${mins} min`;
   const hrs = Math.floor(mins / 60);
   const rest = mins % 60;
+  if (hrs >= 24) {
+    const days = Math.floor(hrs / 24);
+    const h = hrs % 24;
+    const text = days === 1 ? '1 dag' : `${days} dagen`;
+    return h ? `${text} ${h} u` : text;
+  }
   return rest ? `${hrs} u ${rest} min` : `${hrs} u`;
 }
 
