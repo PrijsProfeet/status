@@ -98,6 +98,72 @@ class TestIncidentThreshold(unittest.TestCase):
         self.assertIsNone(data["incidents"][1]["resolved_at"])
 
 
+class TestIncidentStart(unittest.TestCase):
+    def test_the_incident_starts_at_the_first_failed_check(self):
+        data = _fresh_data()
+        data["services"]["api"] = {}
+        probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t1")
+        probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t2")
+        self.assertEqual(data["incidents"][0]["started_at"], "t1")
+
+    def test_a_recovery_forgets_the_first_failure(self):
+        data = _fresh_data()
+        data["services"]["api"] = {}
+        probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t1")
+        probe._update_incidents(data, "api", "API", CheckResult(True, "200 OK"), "t2")
+        probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t3")
+        probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t4")
+        self.assertEqual(data["incidents"][0]["started_at"], "t3")
+        probe._update_incidents(data, "api", "API", CheckResult(True, "200 OK"), "t5")
+        self.assertNotIn("failing_since", data["services"]["api"])
+
+
+class TestRetry(unittest.TestCase):
+    def setUp(self):
+        self._sleep = probe.time.sleep
+        probe.time.sleep = lambda _s: None
+
+    def tearDown(self):
+        probe.time.sleep = self._sleep
+
+    def _check(self, *answers):
+        calls = []
+
+        def check(url):
+            calls.append(url)
+            return answers[len(calls) - 1]
+
+        return check, calls
+
+    def test_a_pass_is_not_retried(self):
+        check, calls = self._check(CheckResult(True, "200 OK"))
+        self.assertTrue(probe.with_retry(check, "u").ok)
+        self.assertEqual(len(calls), 1)
+
+    def test_a_dropped_connection_that_recovers_counts_as_up(self):
+        check, calls = self._check(
+            CheckResult(False, "onbereikbaar: time-out"), CheckResult(True, "200 OK")
+        )
+        self.assertTrue(probe.with_retry(check, "u").ok)
+        self.assertEqual(len(calls), 2)
+
+    def test_a_host_that_fails_twice_counts_as_down_with_the_second_reason(self):
+        check, _ = self._check(
+            CheckResult(False, "onbereikbaar: time-out"), CheckResult(False, "HTTP 503")
+        )
+        result = probe.with_retry(check, "u")
+        self.assertFalse(result.ok)
+        self.assertEqual(result.detail, "HTTP 503")
+
+    def test_main_retries_every_check(self):
+        import inspect
+
+        src = inspect.getsource(probe.main)
+        self.assertNotRegex(src, r"[^_]check_(api|website)\(")
+        self.assertIn("with_retry(check_api", src)
+        self.assertIn("with_retry(check_website", src)
+
+
 class TestPruning(unittest.TestCase):
     def _old_iso(self, days):
         return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()

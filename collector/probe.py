@@ -19,13 +19,14 @@ from __future__ import annotations
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,6 +49,13 @@ ATOM_NS = "http://www.w3.org/2005/Atom"
 AMSTERDAM = ZoneInfo("Europe/Amsterdam")
 
 TIMEOUT_SECONDS = 15
+# A failed check is tried once more after this pause before it counts. Measured
+# 26 Sept - 14 Oct 2026: 17 of the 21 failed runs were a lone timeout from the
+# GitHub runner to prijsprofeet.be, while the box's own blackbox probe (every
+# 15s, same public URL) saw nothing; one such pair opened the only incident the
+# page ever showed (7 Oct 00:35). A second, fresh connection separates a
+# dropped route from a host that is really down.
+RETRY_DELAY_SECONDS = 5
 USER_AGENT = "prijsprofeet-status/1.0 (+https://github.com/PrijsProfeet/status)"
 
 # How many days of daily buckets to keep. The page only ever shows the last 31
@@ -150,6 +158,17 @@ def _fetch(url: str) -> tuple[Optional[int], dict[str, str], bytes, Optional[str
         return e.code, dict(e.headers or {}), e.read(), None
     except Exception as e:  # noqa: BLE001 — a probe must never crash the run
         return None, {}, b"", str(e)
+
+
+def with_retry(check: Callable[[str], CheckResult], base_url: str) -> CheckResult:
+    """Run `check`, and once more after RETRY_DELAY_SECONDS if it failed. The
+    second answer is the one that counts: a host that is really down fails
+    both, a dropped connection does not."""
+    result = check(base_url)
+    if result.ok:
+        return result
+    time.sleep(RETRY_DELAY_SECONDS)
+    return check(base_url)
 
 
 def check_api(base_url: str) -> CheckResult:
@@ -305,17 +324,22 @@ def _update_incidents(
             if ongoing is not None:
                 ongoing["resolved_at"] = checked_at
         service["consecutive_failures"] = 0
+        service.pop("failing_since", None)
         return
 
     streak += 1
     service["consecutive_failures"] = streak
+    if streak == 1:
+        service["failing_since"] = checked_at
 
     if streak == INCIDENT_THRESHOLD:
         data["incidents"].append(
             {
                 "service": key,
                 "name": name,
-                "started_at": checked_at,
+                # The outage began at the first failed check, not at the one
+                # that crossed the threshold (that put the start ~5 min late).
+                "started_at": service.get("failing_since", checked_at),
                 "resolved_at": None,
                 "detail": result.detail,
             }
@@ -560,11 +584,11 @@ def main() -> int:
     for group, base_url, suffix in SITES:
         _update_service(
             data, "website" + suffix, "Website", base_url + "/",
-            check_website(base_url), group,
+            with_retry(check_website, base_url), group,
         )
         _update_service(
             data, "api" + suffix, "API", base_url + "/api/v1/ready",
-            check_api(base_url), group,
+            with_retry(check_api, base_url), group,
         )
 
     for _group, base_url, _suffix in SITES:
