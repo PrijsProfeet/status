@@ -455,7 +455,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-14T02:00:49.346798+00:00",
+  "generated_at": "2026-10-14T02:05:22.466799+00:00",
   "incidents": [
     {
       "detail": "onbereikbaar: time-out",
@@ -683,10 +683,10 @@
           "date": "2026-10-14",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 51
+          "runs": 52
         }
       ],
-      "last_checked": "2026-10-14T02:00:50.469630+00:00",
+      "last_checked": "2026-10-14T02:05:23.445717+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
@@ -808,10 +808,10 @@
           "date": "2026-10-14",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 51
+          "runs": 52
         }
       ],
-      "last_checked": "2026-10-14T02:00:51.590390+00:00",
+      "last_checked": "2026-10-14T02:05:39.261251+00:00",
       "name": "API",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
@@ -1032,17 +1032,17 @@
           "date": "2026-10-14",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 51
+          "runs": 52
         }
       ],
-      "last_checked": "2026-10-14T02:00:50.017473+00:00",
+      "last_checked": "2026-10-14T02:05:23.063170+00:00",
       "name": "Website",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
     },
     "website_be": {
-      "consecutive_failures": 0,
-      "detail": "200 OK",
+      "consecutive_failures": 1,
+      "detail": "onbereikbaar: time-out",
       "group": "Belgi\u00eb",
       "history": [
         {
@@ -1158,14 +1158,17 @@
         },
         {
           "date": "2026-10-14",
-          "failed_runs": 0,
-          "first_failure": null,
-          "runs": 51
+          "failed_runs": 1,
+          "first_failure": {
+            "detail": "onbereikbaar: time-out",
+            "time": "2026-10-14T02:05:38.728721+00:00"
+          },
+          "runs": 52
         }
       ],
-      "last_checked": "2026-10-14T02:00:51.334809+00:00",
+      "last_checked": "2026-10-14T02:05:38.728721+00:00",
       "name": "Website",
-      "status": "up",
+      "status": "down",
       "target": "https://www.prijsprofeet.be/"
     }
   },
