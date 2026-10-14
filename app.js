@@ -232,9 +232,15 @@ function renderService(key, service, incidents) {
   return row;
 }
 
-function overallStatus(services) {
+// An open alert incident (Prometheus, #954: slow API, failing requests, search
+// down) means the checks above can all be green while something is wrong, so
+// "Alles werkt" would contradict the list below it.
+function overallStatus(services, incidents) {
   const statuses = Object.values(services).map((s) => s.status);
-  if (statuses.every((s) => s === 'up')) return 'up';
+  const alertOpen = (incidents || []).some(
+    (i) => i.resolved_at === null && String(i.service).startsWith('alert:'),
+  );
+  if (statuses.every((s) => s === 'up') && !alertOpen) return 'up';
   if (statuses.some((s) => s === 'down')) return 'down';
   if (statuses.length === 0) return 'none';
   return 'degraded';
@@ -250,7 +256,7 @@ function renderBanner(data) {
       : 'Geen gegevens';
     return;
   }
-  const status = overallStatus(data.services || {});
+  const status = overallStatus(data.services || {}, data.incidents);
   banner.dataset.status = status;
   text.textContent = {
     up: 'Alles werkt',

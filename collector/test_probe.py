@@ -21,6 +21,9 @@ from probe import (
     _update_service,
     _update_freshness,
     _update_sla,
+    _update_alert_incidents,
+    _feed_entries,
+    fetch_alerts,
     fetch_freshness,
     fetch_sla_summary,
 )
@@ -442,6 +445,80 @@ class TestFreshnessPerHost(unittest.TestCase):
                 "www.prijsprofeet.be": {"retailers": ["be"]},
             },
         )
+
+
+class TestAlertIncidents(unittest.TestCase):
+    """Public Prometheus alerts (#954): pulled per host, an incident each, and
+    closed only by an answer that no longer lists them."""
+
+    NL = "www.prijsprofeet.nl"
+    BE = "www.prijsprofeet.be"
+    SLOW = {"id": "PublicAPISlow", "title": "De API reageert traag", "since": "2026-10-13T10:00:00+00:00"}
+
+    def _answer(self, status, payload):
+        body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+        original = probe._fetch
+        probe._fetch = lambda url: (status, {}, body, None)
+        self.addCleanup(setattr, probe, "_fetch", original)
+
+    def test_an_answer_for_the_asked_host_is_kept(self):
+        self._answer(200, {"host": self.NL, "incidents": [self.SLOW]})
+        self.assertEqual(fetch_alerts("https://" + self.NL), [self.SLOW])
+        self._answer(200, {"host": self.NL, "incidents": []})
+        self.assertEqual(fetch_alerts("https://" + self.NL), [])
+
+    def test_an_error_another_host_or_garbage_is_no_answer(self):
+        # A 503 (Prometheus down) must never read as "nothing is wrong".
+        for status, payload in [
+            (503, {"detail": "weg"}),
+            (404, {"detail": "Not Found"}),
+            (200, b"<html>"),
+            (200, {"host": self.NL, "incidents": [self.SLOW]}),
+            (200, {"host": self.BE}),
+            (200, {"host": self.BE, "incidents": [{"id": "X", "title": "Y", "since": "gisteren"}]}),
+        ]:
+            self._answer(status, payload)
+            self.assertIsNone(fetch_alerts("https://" + self.BE), payload)
+
+    def test_an_alert_opens_one_incident_from_its_own_start(self):
+        data = _fresh_data()
+        for _ in range(3):
+            _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        (incident,) = data["incidents"]
+        self.assertEqual(incident["name"], "De API reageert traag (Nederland)")
+        self.assertEqual(incident["started_at"], self.SLOW["since"])
+        self.assertIsNone(incident["resolved_at"])
+
+    def test_no_answer_changes_nothing_and_an_answer_without_it_closes_it(self):
+        data = _fresh_data()
+        _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.NL, "Nederland", None, "2026-10-13T10:25:00+00:00")
+        self.assertIsNone(data["incidents"][0]["resolved_at"])
+        _update_alert_incidents(data, self.NL, "Nederland", [], "2026-10-13T10:30:00+00:00")
+        self.assertEqual(data["incidents"][0]["resolved_at"], "2026-10-13T10:30:00+00:00")
+
+    def test_each_host_closes_only_its_own(self):
+        data = _fresh_data()
+        _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.BE, "België", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.BE, "België", [], "2026-10-13T10:30:00+00:00")
+        by_host = {i["host"]: i["resolved_at"] for i in data["incidents"]}
+        self.assertEqual(by_host, {self.NL: None, self.BE: "2026-10-13T10:30:00+00:00"})
+
+    def test_the_probes_own_incidents_are_never_closed_by_an_alert_answer(self):
+        data = _fresh_data()
+        data["incidents"].append(
+            {"service": "api", "name": "API (Nederland)", "started_at": "2026-10-13T10:00:00+00:00",
+             "resolved_at": None, "detail": None}
+        )
+        _update_alert_incidents(data, self.NL, "Nederland", [], "2026-10-13T10:30:00+00:00")
+        self.assertIsNone(data["incidents"][0]["resolved_at"])
+
+    def test_it_reaches_the_feed(self):
+        data = _fresh_data()
+        _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        (entry,) = _feed_entries(data["incidents"], [])
+        self.assertEqual(entry["title"], "Storing: De API reageert traag (Nederland)")
 
 
 class TestDutchDetails(unittest.TestCase):

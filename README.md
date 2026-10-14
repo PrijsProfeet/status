@@ -14,6 +14,13 @@ monitors answers "up" from inside the very outage it should report.
   rendered as one group per country on a single page, plus the public `/api/v1/sla/summary` endpoint on
   each host for that host's monthly SLA track record (the Business SLA is
   owed per host, #1242; an answer that names another host is refused), and writes the result into `data/status.json`.
+- It also asks each host for `/api/v1/status/incidents`: the Prometheus
+  alerts prijsprofeet marks public (a slow API, failing requests, search
+  down; #954), each with a Dutch title. Every such alert becomes an incident
+  like the probe's own, on the page and in the feed, starting when Prometheus
+  says it began. Pulled, never pushed: the box holds no key to this repo. A
+  failed fetch leaves open alert incidents as they are; only an answer that no
+  longer lists an alert closes it.
 - `.github/workflows/probe.yml` runs that script every 5 minutes (best
   effort — GitHub can delay a scheduled run under load) and commits the
   updated JSON straight to `main`.
