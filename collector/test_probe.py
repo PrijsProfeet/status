@@ -164,6 +164,96 @@ class TestRetry(unittest.TestCase):
         self.assertIn("with_retry(check_website", src)
 
 
+class TestFreshnessIncidents(unittest.TestCase):
+    HOST = "www.prijsprofeet.nl"
+
+    def _summary(self, day, fresh, retailer="albert_heijn", name="Albert Heijn"):
+        return {
+            "fresh_by": "07:00",
+            "retailers": [{"retailer": retailer, "name": name, "latest": {"day": day, "fresh": fresh}}],
+        }
+
+    def _run(self, data, day, fresh, **kw):
+        probe._update_freshness_incidents(data, self.HOST, "Nederland", self._summary(day, fresh, **kw))
+
+    def test_a_stale_chain_opens_an_incident_at_seven_dutch_time(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", False)
+        [i] = data["incidents"]
+        self.assertEqual(i["service"], "versheid:albert_heijn:www.prijsprofeet.nl")
+        self.assertEqual(i["name"], "Albert Heijn (Nederland)")
+        self.assertEqual(i["started_at"], "2026-10-12T05:00:00+00:00")
+        self.assertIsNone(i["resolved_at"])
+
+    def test_staying_stale_keeps_one_incident_and_its_start(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", False)
+        self._run(data, "2026-10-13", False)
+        self._run(data, "2026-10-13", False)
+        [i] = data["incidents"]
+        self.assertEqual(i["started_at"], "2026-10-12T05:00:00+00:00")
+
+    def test_the_first_fresh_morning_closes_it(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", False)
+        self._run(data, "2026-10-15", True)
+        [i] = data["incidents"]
+        self.assertEqual(i["resolved_at"], "2026-10-15T05:00:00+00:00")
+
+    def test_a_fresh_chain_opens_nothing(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", True)
+        self.assertEqual(data["incidents"], [])
+
+    def test_a_failed_fetch_leaves_an_open_incident_open(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", False)
+        probe._update_freshness_incidents(data, self.HOST, "Nederland", None)
+        self.assertIsNone(data["incidents"][0]["resolved_at"])
+
+    def test_each_host_has_its_own_incident(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", False)
+        probe._update_freshness_incidents(
+            data, "www.prijsprofeet.be", "België",
+            self._summary("2026-10-12", False, retailer="albert_heijn_be"),
+        )
+        self.assertEqual(
+            [i["name"] for i in data["incidents"]],
+            ["Albert Heijn (Nederland)", "Albert Heijn (België)"],
+        )
+
+    def test_the_feed_says_not_fresh_and_fresh_again_not_storing(self):
+        data = _fresh_data()
+        self._run(data, "2026-10-12", False)
+        self._run(data, "2026-10-15", True)
+        root = ET_parse(probe.build_feed(data["incidents"], []))
+        titles = [e.findtext(f"{{{probe.ATOM_NS}}}title") for e in root.iter(f"{{{probe.ATOM_NS}}}entry")]
+        self.assertEqual(titles, ["Weer vers: Albert Heijn (Nederland)", "Niet vers: Albert Heijn (Nederland)"])
+        xml = probe.build_feed(data["incidents"], [])
+        self.assertIn("Om 12 oktober 07:00 was de data", xml)
+        self.assertIn("na 3 dagen", xml)
+        self.assertNotIn("Storing:", xml)
+
+    def test_main_feeds_the_freshness_answer_into_the_incidents(self):
+        import inspect
+
+        self.assertIn("_update_freshness_incidents(", inspect.getsource(probe.main))
+
+
+def ET_parse(xml):
+    import xml.etree.ElementTree as ET
+
+    return ET.fromstring(xml)
+
+
+class TestDuration(unittest.TestCase):
+    def test_days(self):
+        self.assertEqual(probe._duration("2026-10-12T05:00:00+00:00", "2026-10-13T05:00:00+00:00"), "1 dag")
+        self.assertEqual(probe._duration("2026-10-12T05:00:00+00:00", "2026-10-14T08:00:00+00:00"), "2 dagen 3 u")
+        self.assertEqual(probe._duration("2026-10-12T05:00:00+00:00", "2026-10-12T08:30:00+00:00"), "3 u 30 min")
+
+
 class TestPruning(unittest.TestCase):
     def _old_iso(self, days):
         return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()

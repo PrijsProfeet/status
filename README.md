@@ -30,8 +30,17 @@ incident opens and a separate one when it is resolved (a feed reader notifies
 on a new entry, not on an updated one), plus every notice. The feed only
 changes when an entry does, never on the clock.
 
+A chain that is not fresh at 07:00 (`/api/v1/freshness/summary` on each host)
+is an incident too, per chain per host (`versheid:{retailer}:{host}`): "Niet
+vers" on the first stale morning, "Weer vers" on the first fresh one. Both
+ends sit at 07:00 of the measured day. The probe only sees the latest day, so
+an incident that opens mid-streak (the first run, or after the probe was down)
+starts on the day it was first seen; correct it by hand in `data/status.json`
+from prod `freshness_days`. These incidents never turn the banner: our hosts
+answer, the data stands still.
+
 Notices are what the probe cannot see: planned maintenance, or a chain whose
-source is down. Add one to `notices.json` in a normal commit; the push runs
+source is down for a known reason. Add one to `notices.json` in a normal commit; the push runs
 the workflow, which validates the file (the unit tests load it) and publishes
 it within a minute or two:
 
