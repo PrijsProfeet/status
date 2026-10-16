@@ -235,8 +235,12 @@ function renderService(key, service, incidents) {
 // An open alert incident (Prometheus, #954: slow API, failing requests, search
 // down) means the checks above can all be green while something is wrong, so
 // "Alles werkt" would contradict the list below it.
+// The MCP connector down while the site and the API answer is a partial
+// outage: most visitors are unaffected.
 function overallStatus(services, incidents) {
-  const statuses = Object.values(services).map((s) => s.status);
+  const statuses = Object.entries(services).map(([key, s]) =>
+    key.startsWith('mcp') && s.status === 'down' ? 'degraded' : s.status,
+  );
   const alertOpen = (incidents || []).some(
     (i) => i.resolved_at === null && String(i.service).startsWith('alert:'),
   );
@@ -577,7 +581,7 @@ function renderData(data) {
   main.innerHTML = '';
   // One page, both storefronts: rows grouped per country under a heading,
   // so a host-only outage (DNS, Cloudflare zone, certificate) reads as such.
-  const order = ['website', 'api', 'website_be', 'api_be'];
+  const order = ['website', 'api', 'mcp', 'website_be', 'api_be', 'mcp_be'];
   const rank = (key) => (order.includes(key) ? order.indexOf(key) : order.length);
   const keys = Object.keys(data.services || {}).sort((a, b) => rank(a) - rank(b));
   let group = null;

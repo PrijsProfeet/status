@@ -142,13 +142,22 @@ class CheckResult:
     detail: str
 
 
-def _fetch(url: str) -> tuple[Optional[int], dict[str, str], bytes, Optional[str]]:
-    """GET url, returning (status_code, headers, body, error). Never raises.
+def _fetch(
+    url: str, body: Optional[bytes] = None
+) -> tuple[Optional[int], dict[str, str], bytes, Optional[str]]:
+    """GET url (POST `body` as JSON when given), returning (status_code,
+    headers, body, error). Never raises.
 
     urllib treats a 4xx/5xx as an HTTPError instead of a normal response, so
     both branches are handled here rather than by the caller.
     """
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    headers = {"User-Agent": USER_AGENT}
+    if body is not None:
+        # The MCP transport refuses a client that does not accept both forms,
+        # even though ours always answers in JSON (json_response=True).
+        headers["Content-Type"] = "application/json"
+        headers["Accept"] = "application/json, text/event-stream"
+    req = urllib.request.Request(url, data=body, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as resp:
             return resp.status, dict(resp.headers), resp.read(), None
@@ -198,6 +207,37 @@ def check_website(base_url: str) -> CheckResult:
         # Cloudflare challenges automated checks here by design.
         return CheckResult(True, CLOUDFLARE_REACHABLE)
     return CheckResult(False, f"HTTP {status}")
+
+
+MCP_PATH = "/api/v1/mcp"
+# The tools the Claude and ChatGPT directories list. An answer without them is
+# a broken connector, however green its status code.
+MCP_TOOLS = {"search", "fetch"}
+MCP_TOOLS_LIST = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}).encode()
+
+
+def check_mcp(base_url: str) -> CheckResult:
+    """The MCP connector (prijsprofeet#914): its own nginx location and its own
+    transport, so it can break while /api/v1/ready is green, and its users
+    (Claude, ChatGPT) never see the site.
+
+    Asks `tools/list`, never a tool: only tool calls count against the
+    connector's daily cap, and a call every five minutes from two hosts would
+    eat over half of what third parties get per day. The transport is
+    stateless, so one POST without `initialize` is a complete answer."""
+    status, _headers, body, error = _fetch(base_url + MCP_PATH, MCP_TOOLS_LIST)
+    if error:
+        return CheckResult(False, dutch_detail(f"unreachable: {error}"))
+    if status != 200:
+        return CheckResult(False, f"HTTP {status}")
+    try:
+        tools = {t["name"] for t in json.loads(body)["result"]["tools"]}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return CheckResult(False, "geen geldig MCP-antwoord")
+    missing = sorted(MCP_TOOLS - tools)
+    if missing:
+        return CheckResult(False, f"tool ontbreekt: {', '.join(missing)}")
+    return CheckResult(True, "200 OK, tools search en fetch")
 
 
 def fetch_sla_summary(base_url: str) -> Optional[dict[str, Any]]:
@@ -744,6 +784,10 @@ def main() -> int:
         _update_service(
             data, "api" + suffix, "API", base_url + "/api/v1/ready",
             with_retry(check_api, base_url), group,
+        )
+        _update_service(
+            data, "mcp" + suffix, "MCP-connector", base_url + MCP_PATH,
+            with_retry(check_mcp, base_url), group,
         )
 
     for group, base_url, _suffix in SITES:

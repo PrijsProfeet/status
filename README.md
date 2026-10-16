@@ -9,7 +9,9 @@ monitors answers "up" from inside the very outage it should report.
 
 ## How it works
 
-- `collector/probe.py` (stdlib-only Python) hits `/` and `/api/v1/ready` on
+- `collector/probe.py` (stdlib-only Python) hits `/`, `/api/v1/ready` and the
+  MCP connector (`POST /api/v1/mcp` with `tools/list`, which must list `search`
+  and `fetch`) on
   every host in its `SITES` table (`www.prijsprofeet.nl`, `www.prijsprofeet.be`),
   rendered as one group per country on a single page, plus the public `/api/v1/sla/summary` endpoint on
   each host for that host's monthly SLA track record (the Business SLA is
@@ -32,6 +34,16 @@ monitors answers "up" from inside the very outage it should report.
   the page renders as before. Visits during an outage are therefore not
   counted.
 - Served by GitHub Pages at `status.prijsprofeet.nl`.
+
+### Why the MCP check never calls a tool
+
+The connector counts every tool call against a daily cap, with a smaller cap
+for third parties (prijsprofeet#914). A `search` every five minutes from two
+hosts would use more than half of that smaller cap and show up in the
+connector's usage metrics. `tools/list` counts for neither, and still proves
+the nginx location, the transport and the tool registration. A connector that
+is down while the site and the API answer turns the banner to "Gedeeltelijke
+storing", not "Storing".
 
 ## Atom feed and notices
 

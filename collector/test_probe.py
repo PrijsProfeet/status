@@ -165,6 +165,7 @@ class TestRetry(unittest.TestCase):
         self.assertNotRegex(src, r"[^_]check_(api|website)\(")
         self.assertIn("with_retry(check_api", src)
         self.assertIn("with_retry(check_website", src)
+        self.assertIn("with_retry(check_mcp", src)
 
 
 class TestFreshnessIncidents(unittest.TestCase):
@@ -684,3 +685,52 @@ class TestLocalDays(unittest.TestCase):
         _update_service(data, "api", "API", "url", CheckResult(True, "200 OK"))
         today = probe._local_day(datetime.now(timezone.utc))
         self.assertEqual([d["date"] for d in data["services"]["api"]["history"]], [today])
+
+
+class TestMcpCheck(unittest.TestCase):
+    def _answer(self, status, body, error=None):
+        calls = []
+
+        def fake(url, body_sent=None):
+            calls.append((url, body_sent))
+            return status, {}, body, error
+
+        original = probe._fetch
+        probe._fetch = fake
+        self.addCleanup(setattr, probe, "_fetch", original)
+        return calls
+
+    def _tools(self, *names):
+        return json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "result": {"tools": [{"name": n} for n in names]}}
+        ).encode()
+
+    def test_both_tools_listed_is_up(self):
+        self._answer(200, self._tools("search", "fetch"))
+        self.assertTrue(probe.check_mcp("https://h").ok)
+
+    def test_it_asks_tools_list_and_never_calls_a_tool(self):
+        # A tool call counts against the connector's daily cap; tools/list does not.
+        calls = self._answer(200, self._tools("search", "fetch"))
+        probe.check_mcp("https://h")
+        url, sent = calls[0]
+        self.assertEqual(url, "https://h/api/v1/mcp")
+        self.assertEqual(json.loads(sent)["method"], "tools/list")
+
+    def test_a_missing_tool_is_down(self):
+        self._answer(200, self._tools("search"))
+        result = probe.check_mcp("https://h")
+        self.assertFalse(result.ok)
+        self.assertIn("fetch", result.detail)
+
+    def test_a_200_without_a_tool_list_is_down(self):
+        self._answer(200, b"<html>maintenance</html>")
+        self.assertFalse(probe.check_mcp("https://h").ok)
+
+    def test_an_http_error_is_down(self):
+        self._answer(502, b"")
+        self.assertEqual(probe.check_mcp("https://h").detail, "HTTP 502")
+
+    def test_unreachable_is_down_in_dutch(self):
+        self._answer(None, b"", "timed out")
+        self.assertEqual(probe.check_mcp("https://h").detail, "onbereikbaar: time-out")
