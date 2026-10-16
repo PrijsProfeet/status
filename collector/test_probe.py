@@ -37,14 +37,14 @@ def _fresh_data():
 class TestIncidentThreshold(unittest.TestCase):
     def test_a_single_blip_opens_no_incident(self):
         data = _fresh_data()
-        _update_service(data, "api", "API", "url", CheckResult(False, "HTTP 503"))
+        _update_service(data, "api", "API", "url", CheckResult(False, "http_503"))
         self.assertEqual(data["incidents"], [])
         self.assertEqual(data["services"]["api"]["consecutive_failures"], 1)
 
     def test_reaching_the_threshold_opens_one_incident(self):
         data = _fresh_data()
         for _ in range(INCIDENT_THRESHOLD):
-            _update_service(data, "api", "API", "url", CheckResult(False, "HTTP 503"))
+            _update_service(data, "api", "API", "url", CheckResult(False, "http_503"))
         self.assertEqual(len(data["incidents"]), 1)
         incident = data["incidents"][0]
         self.assertEqual(incident["service"], "api")
@@ -53,8 +53,8 @@ class TestIncidentThreshold(unittest.TestCase):
     def test_recovery_closes_the_incident(self):
         data = _fresh_data()
         for _ in range(INCIDENT_THRESHOLD):
-            _update_service(data, "api", "API", "url", CheckResult(False, "HTTP 503"))
-        _update_service(data, "api", "API", "url", CheckResult(True, "200 OK"))
+            _update_service(data, "api", "API", "url", CheckResult(False, "http_503"))
+        _update_service(data, "api", "API", "url", CheckResult(True, "ok"))
 
         self.assertEqual(len(data["incidents"]), 1)
         self.assertIsNotNone(data["incidents"][0]["resolved_at"])
@@ -64,19 +64,19 @@ class TestIncidentThreshold(unittest.TestCase):
         self,
     ):
         data = _fresh_data()
-        _update_service(data, "api", "API", "url", CheckResult(False, "HTTP 503"))
-        _update_service(data, "api", "API", "url", CheckResult(True, "200 OK"))
+        _update_service(data, "api", "API", "url", CheckResult(False, "http_503"))
+        _update_service(data, "api", "API", "url", CheckResult(True, "ok"))
         self.assertEqual(data["incidents"], [])
 
     def test_a_longer_outage_stays_one_incident_and_tracks_the_latest_detail(self):
         data = _fresh_data()
         for _ in range(INCIDENT_THRESHOLD):
-            _update_service(data, "api", "API", "url", CheckResult(False, "HTTP 503"))
+            _update_service(data, "api", "API", "url", CheckResult(False, "http_503"))
         _update_service(
-            data, "api", "API", "url", CheckResult(False, "unreachable: timeout")
+            data, "api", "API", "url", CheckResult(False, "timeout")
         )
         self.assertEqual(len(data["incidents"]), 1)
-        self.assertEqual(data["incidents"][0]["detail"], "unreachable: timeout")
+        self.assertEqual(data["incidents"][0]["reason"], "timeout")
 
     def test_two_services_track_independent_streaks(self):
         data = _fresh_data()
@@ -92,7 +92,7 @@ class TestIncidentThreshold(unittest.TestCase):
         data = _fresh_data()
         for _ in range(INCIDENT_THRESHOLD):
             _update_service(data, "api", "API", "url", CheckResult(False, "down"))
-        _update_service(data, "api", "API", "url", CheckResult(True, "200 OK"))
+        _update_service(data, "api", "API", "url", CheckResult(True, "ok"))
         for _ in range(INCIDENT_THRESHOLD):
             _update_service(data, "api", "API", "url", CheckResult(False, "down again"))
 
@@ -113,11 +113,11 @@ class TestIncidentStart(unittest.TestCase):
         data = _fresh_data()
         data["services"]["api"] = {}
         probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t1")
-        probe._update_incidents(data, "api", "API", CheckResult(True, "200 OK"), "t2")
+        probe._update_incidents(data, "api", "API", CheckResult(True, "ok"), "t2")
         probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t3")
         probe._update_incidents(data, "api", "API", CheckResult(False, "down"), "t4")
         self.assertEqual(data["incidents"][0]["started_at"], "t3")
-        probe._update_incidents(data, "api", "API", CheckResult(True, "200 OK"), "t5")
+        probe._update_incidents(data, "api", "API", CheckResult(True, "ok"), "t5")
         self.assertNotIn("failing_since", data["services"]["api"])
 
 
@@ -139,24 +139,24 @@ class TestRetry(unittest.TestCase):
         return check, calls
 
     def test_a_pass_is_not_retried(self):
-        check, calls = self._check(CheckResult(True, "200 OK"))
+        check, calls = self._check(CheckResult(True, "ok"))
         self.assertTrue(probe.with_retry(check, "u").ok)
         self.assertEqual(len(calls), 1)
 
     def test_a_dropped_connection_that_recovers_counts_as_up(self):
         check, calls = self._check(
-            CheckResult(False, "onbereikbaar: time-out"), CheckResult(True, "200 OK")
+            CheckResult(False, "timeout"), CheckResult(True, "ok")
         )
         self.assertTrue(probe.with_retry(check, "u").ok)
         self.assertEqual(len(calls), 2)
 
     def test_a_host_that_fails_twice_counts_as_down_with_the_second_reason(self):
         check, _ = self._check(
-            CheckResult(False, "onbereikbaar: time-out"), CheckResult(False, "HTTP 503")
+            CheckResult(False, "timeout"), CheckResult(False, "http_503")
         )
         result = probe.with_retry(check, "u")
         self.assertFalse(result.ok)
-        self.assertEqual(result.detail, "HTTP 503")
+        self.assertEqual(result.reason, "http_503")
 
     def test_main_retries_every_check(self):
         import inspect
@@ -178,7 +178,7 @@ class TestFreshnessIncidents(unittest.TestCase):
         }
 
     def _run(self, data, day, fresh, **kw):
-        probe._update_freshness_incidents(data, self.HOST, "Nederland", self._summary(day, fresh, **kw))
+        probe._update_freshness_incidents(data, self.HOST, "nl", self._summary(day, fresh, **kw))
 
     def test_a_stale_chain_opens_an_incident_at_seven_dutch_time(self):
         data = _fresh_data()
@@ -212,14 +212,14 @@ class TestFreshnessIncidents(unittest.TestCase):
     def test_a_failed_fetch_leaves_an_open_incident_open(self):
         data = _fresh_data()
         self._run(data, "2026-10-12", False)
-        probe._update_freshness_incidents(data, self.HOST, "Nederland", None)
+        probe._update_freshness_incidents(data, self.HOST, "nl", None)
         self.assertIsNone(data["incidents"][0]["resolved_at"])
 
     def test_each_host_has_its_own_incident(self):
         data = _fresh_data()
         self._run(data, "2026-10-12", False)
         probe._update_freshness_incidents(
-            data, "www.prijsprofeet.be", "België",
+            data, "www.prijsprofeet.be", "be",
             self._summary("2026-10-12", False, retailer="albert_heijn_be"),
         )
         self.assertEqual(
@@ -333,7 +333,7 @@ class TestBothStorefronts(unittest.TestCase):
         self.assertEqual(SITES[0][2], "")
 
     def test_every_site_gets_its_own_service_keys(self):
-        suffixes = [suffix for _group, _url, suffix in SITES]
+        suffixes = [suffix for _country, _url, suffix in SITES]
         self.assertEqual(len(suffixes), len(set(suffixes)))
         self.assertIn("https://www.prijsprofeet.be", [url for _g, url, _s in SITES])
 
@@ -342,19 +342,20 @@ class TestBothStorefronts(unittest.TestCase):
         data = _fresh_data()
         for _ in range(INCIDENT_THRESHOLD):
             _update_service(
-                data, "api_be", "API", "url", CheckResult(False, "HTTP 525"), "België"
+                data, "api_be", "API", "url", CheckResult(False, "http_525"), "be"
             )
         self.assertEqual(data["incidents"][0]["name"], "API (België)")
-        self.assertEqual(data["services"]["api_be"]["group"], "België")
+        self.assertEqual(data["services"]["api_be"]["country"], "be")
+        self.assertEqual(data["incidents"][0]["country"], "be")
 
     def test_a_be_outage_leaves_the_nl_rows_alone(self):
         data = _fresh_data()
         for _ in range(INCIDENT_THRESHOLD):
             _update_service(
-                data, "api_be", "API", "url", CheckResult(False, "down"), "België"
+                data, "api_be", "API", "url", CheckResult(False, "down"), "be"
             )
             _update_service(
-                data, "api", "API", "url", CheckResult(True, "200 OK"), "Nederland"
+                data, "api", "API", "url", CheckResult(True, "ok"), "nl"
             )
         self.assertEqual([i["service"] for i in data["incidents"]], ["api_be"])
         self.assertEqual(data["services"]["api"]["status"], "up")
@@ -484,7 +485,7 @@ class TestAlertIncidents(unittest.TestCase):
     def test_an_alert_opens_one_incident_from_its_own_start(self):
         data = _fresh_data()
         for _ in range(3):
-            _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
+            _update_alert_incidents(data, self.NL, "nl", [self.SLOW], "2026-10-13T10:20:00+00:00")
         (incident,) = data["incidents"]
         self.assertEqual(incident["name"], "De API reageert traag (Nederland)")
         self.assertEqual(incident["started_at"], self.SLOW["since"])
@@ -492,17 +493,17 @@ class TestAlertIncidents(unittest.TestCase):
 
     def test_no_answer_changes_nothing_and_an_answer_without_it_closes_it(self):
         data = _fresh_data()
-        _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
-        _update_alert_incidents(data, self.NL, "Nederland", None, "2026-10-13T10:25:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", None, "2026-10-13T10:25:00+00:00")
         self.assertIsNone(data["incidents"][0]["resolved_at"])
-        _update_alert_incidents(data, self.NL, "Nederland", [], "2026-10-13T10:30:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", [], "2026-10-13T10:30:00+00:00")
         self.assertEqual(data["incidents"][0]["resolved_at"], "2026-10-13T10:30:00+00:00")
 
     def test_each_host_closes_only_its_own(self):
         data = _fresh_data()
-        _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
-        _update_alert_incidents(data, self.BE, "België", [self.SLOW], "2026-10-13T10:20:00+00:00")
-        _update_alert_incidents(data, self.BE, "België", [], "2026-10-13T10:30:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.BE, "be", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.BE, "be", [], "2026-10-13T10:30:00+00:00")
         by_host = {i["host"]: i["resolved_at"] for i in data["incidents"]}
         self.assertEqual(by_host, {self.NL: None, self.BE: "2026-10-13T10:30:00+00:00"})
 
@@ -510,49 +511,54 @@ class TestAlertIncidents(unittest.TestCase):
         data = _fresh_data()
         data["incidents"].append(
             {"service": "api", "name": "API (Nederland)", "started_at": "2026-10-13T10:00:00+00:00",
-             "resolved_at": None, "detail": None}
+             "resolved_at": None, "reason": None}
         )
-        _update_alert_incidents(data, self.NL, "Nederland", [], "2026-10-13T10:30:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", [], "2026-10-13T10:30:00+00:00")
         self.assertIsNone(data["incidents"][0]["resolved_at"])
 
     def test_it_reaches_the_feed(self):
         data = _fresh_data()
-        _update_alert_incidents(data, self.NL, "Nederland", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", [self.SLOW], "2026-10-13T10:20:00+00:00")
         (entry,) = _feed_entries(data["incidents"], [])
         self.assertEqual(entry["title"], "Storing: De API reageert traag (Nederland)")
 
 
-class TestDutchDetails(unittest.TestCase):
-    def test_known_urllib_errors_are_translated(self):
+class TestReasonCodes(unittest.TestCase):
+    """status.json stores codes; the page renders them per language, the feed
+    in Dutch (prijsprofeet#1568: the Belgian storefront gets French)."""
+
+    def test_known_urllib_errors_get_a_code(self):
+        self.assertEqual(probe.unreachable_reason("The read operation timed out"), "timeout")
         self.assertEqual(
-            probe.dutch_detail("unreachable: The read operation timed out"),
-            "onbereikbaar: time-out",
+            probe.unreachable_reason("<urlopen error [Errno 104] Connection reset by peer>"), "reset"
         )
-        self.assertEqual(
-            probe.dutch_detail("unreachable: <urlopen error [Errno 104] Connection reset by peer>"),
-            "onbereikbaar: verbinding verbroken",
-        )
+        self.assertEqual(probe.unreachable_reason("weird"), "unreachable")
 
-    def test_an_unknown_reason_is_kept_verbatim(self):
-        self.assertEqual(probe.dutch_detail("unreachable: weird"), "onbereikbaar: weird")
-        self.assertEqual(probe.dutch_detail("HTTP 525"), "HTTP 525")
+    def test_the_feed_renders_every_code_in_dutch(self):
+        self.assertEqual(probe.reason_text("timeout"), "onbereikbaar: time-out")
+        self.assertEqual(probe.reason_text("http_525"), "HTTP 525")
+        self.assertIsNone(probe.reason_text(None))
 
-    def test_translating_twice_changes_nothing(self):
-        once = probe.dutch_detail("unreachable: timed out")
-        self.assertEqual(probe.dutch_detail(once), once)
+    def test_every_code_the_checks_write_has_dutch(self):
+        import inspect
 
-    def test_stored_english_rows_are_translated_on_load(self):
+        src = inspect.getsource(probe)
+        written = set(__import__("re").findall(r'CheckResult\((?:True|False), "([a-z_]+)"\)', src))
+        written |= {code for _p, code in probe.UNREACHABLE_REASONS} | {"unreachable", "not_fresh"}
+        self.assertEqual(written - set(probe.REASON_TEXT), set())
+
+    def test_the_page_knows_every_code_too(self):
+        from pathlib import Path
+
+        app = (Path(__file__).resolve().parent.parent / "app.js").read_text()
+        for code in probe.REASON_TEXT:
+            self.assertRegex(app, rf"\b{code}:", code)
+
+    def test_a_row_stores_its_country_and_check(self):
         data = _fresh_data()
-        _update_service(data, "api", "API", "url", CheckResult(False, "unreachable: timed out"))
-        data["services"]["api"]["detail"] = "unreachable: timed out"
-        data["incidents"] = [{"detail": "unreachable: timed out"}]
-        probe._translate_details(data)
-        self.assertEqual(data["services"]["api"]["detail"], "onbereikbaar: time-out")
-        self.assertEqual(
-            data["services"]["api"]["history"][0]["first_failure"]["detail"],
-            "onbereikbaar: time-out",
-        )
-        self.assertEqual(data["incidents"][0]["detail"], "onbereikbaar: time-out")
+        _update_service(data, "mcp_be", "MCP-connector", "url", CheckResult(True, "ok"), "be")
+        row = data["services"]["mcp_be"]
+        self.assertEqual((row["country"], row["check"], row["reason"]), ("be", "mcp", "ok"))
 
 
 class TestNotices(unittest.TestCase):
@@ -613,7 +619,7 @@ class TestFeed(unittest.TestCase):
         "name": "API (België)",
         "started_at": "2026-10-06T22:35:41+00:00",
         "resolved_at": "2026-10-06T22:40:38+00:00",
-        "detail": "onbereikbaar: time-out",
+        "reason": "timeout",
     }
     NOTICE = {
         "id": "onderhoud-1",
@@ -682,7 +688,7 @@ class TestLocalDays(unittest.TestCase):
 
     def test_a_check_is_counted_on_todays_local_day(self):
         data = _fresh_data()
-        _update_service(data, "api", "API", "url", CheckResult(True, "200 OK"))
+        _update_service(data, "api", "API", "url", CheckResult(True, "ok"))
         today = probe._local_day(datetime.now(timezone.utc))
         self.assertEqual([d["date"] for d in data["services"]["api"]["history"]], [today])
 
@@ -721,7 +727,7 @@ class TestMcpCheck(unittest.TestCase):
         self._answer(200, self._tools("search"))
         result = probe.check_mcp("https://h")
         self.assertFalse(result.ok)
-        self.assertIn("fetch", result.detail)
+        self.assertEqual(result.reason, "mcp_tools")
 
     def test_a_200_without_a_tool_list_is_down(self):
         self._answer(200, b"<html>maintenance</html>")
@@ -729,8 +735,8 @@ class TestMcpCheck(unittest.TestCase):
 
     def test_an_http_error_is_down(self):
         self._answer(502, b"")
-        self.assertEqual(probe.check_mcp("https://h").detail, "HTTP 502")
+        self.assertEqual(probe.check_mcp("https://h").reason, "http_502")
 
-    def test_unreachable_is_down_in_dutch(self):
+    def test_unreachable_is_a_code(self):
         self._answer(None, b"", "timed out")
-        self.assertEqual(probe.check_mcp("https://h").detail, "onbereikbaar: time-out")
+        self.assertEqual(probe.check_mcp("https://h").reason, "timeout")

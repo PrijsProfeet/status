@@ -458,17 +458,21 @@
   "generated_at": "2026-10-16T05:15:29.657706+00:00",
   "incidents": [
     {
-      "detail": "data van vannacht niet bijgewerkt om 07:00",
+      "chain": "Albert Heijn",
+      "country": "nl",
       "kind": "versheid",
       "name": "Albert Heijn (Nederland)",
+      "reason": "not_fresh",
       "resolved_at": null,
       "service": "versheid:albert_heijn:www.prijsprofeet.nl",
       "started_at": "2026-10-12T05:00:00+00:00"
     },
     {
-      "detail": "data van vannacht niet bijgewerkt om 07:00",
+      "chain": "Albert Heijn",
+      "country": "be",
       "kind": "versheid",
       "name": "Albert Heijn (Belgi\u00eb)",
+      "reason": "not_fresh",
       "resolved_at": null,
       "service": "versheid:albert_heijn_be:www.prijsprofeet.be",
       "started_at": "2026-10-12T05:00:00+00:00"
@@ -477,9 +481,9 @@
   "notices": [],
   "services": {
     "api": {
+      "check": "api",
       "consecutive_failures": 0,
-      "detail": "200 OK",
-      "group": "Nederland",
+      "country": "nl",
       "history": [
         {
           "date": "2026-09-11",
@@ -545,7 +549,7 @@
           "date": "2026-09-21",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: verbinding verbroken",
+            "reason": "reset",
             "time": "2026-09-21T15:35:22.417998+00:00"
           },
           "runs": 294
@@ -566,7 +570,7 @@
           "date": "2026-09-24",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "HTTP 525",
+            "reason": "http_525",
             "time": "2026-09-24T19:10:27.097786+00:00"
           },
           "runs": 294
@@ -677,7 +681,7 @@
           "date": "2026-10-12",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "HTTP 503",
+            "reason": "http_503",
             "time": "2026-10-12T14:10:32.358036+00:00"
           },
           "runs": 292
@@ -709,13 +713,14 @@
       ],
       "last_checked": "2026-10-16T05:15:31.185308+00:00",
       "name": "API",
+      "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
     },
     "api_be": {
+      "check": "api",
       "consecutive_failures": 0,
-      "detail": "200 OK",
-      "group": "Belgi\u00eb",
+      "country": "be",
       "history": [
         {
           "date": "2026-09-28",
@@ -733,7 +738,7 @@
           "date": "2026-09-30",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-09-30T04:56:28.401367+00:00"
           },
           "runs": 293
@@ -772,7 +777,7 @@
           "date": "2026-10-06",
           "failed_runs": 5,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-10-06T16:46:54.740339+00:00"
           },
           "runs": 292
@@ -811,7 +816,7 @@
           "date": "2026-10-12",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "HTTP 503",
+            "reason": "http_503",
             "time": "2026-10-12T14:10:34.140827+00:00"
           },
           "runs": 292
@@ -820,7 +825,7 @@
           "date": "2026-10-13",
           "failed_runs": 2,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-10-13T04:10:52.525546+00:00"
           },
           "runs": 291
@@ -846,13 +851,14 @@
       ],
       "last_checked": "2026-10-16T05:15:33.676347+00:00",
       "name": "API",
+      "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
     },
     "mcp": {
+      "check": "mcp",
       "consecutive_failures": 0,
-      "detail": "200 OK, tools search en fetch",
-      "group": "Nederland",
+      "country": "nl",
       "history": [
         {
           "date": "2026-10-16",
@@ -863,13 +869,14 @@
       ],
       "last_checked": "2026-10-16T05:15:31.788479+00:00",
       "name": "MCP-connector",
+      "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/mcp"
     },
     "mcp_be": {
+      "check": "mcp",
       "consecutive_failures": 0,
-      "detail": "200 OK, tools search en fetch",
-      "group": "Belgi\u00eb",
+      "country": "be",
       "history": [
         {
           "date": "2026-10-16",
@@ -880,13 +887,14 @@
       ],
       "last_checked": "2026-10-16T05:15:34.476298+00:00",
       "name": "MCP-connector",
+      "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/mcp"
     },
     "website": {
+      "check": "website",
       "consecutive_failures": 0,
-      "detail": "200 OK",
-      "group": "Nederland",
+      "country": "nl",
       "history": [
         {
           "date": "2026-09-11",
@@ -958,7 +966,7 @@
           "date": "2026-09-22",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-09-22T08:55:35.951024+00:00"
           },
           "runs": 294
@@ -973,7 +981,7 @@
           "date": "2026-09-24",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "HTTP 525",
+            "reason": "http_525",
             "time": "2026-09-24T19:10:26.771100+00:00"
           },
           "runs": 294
@@ -994,7 +1002,7 @@
           "date": "2026-09-27",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: verbinding verbroken",
+            "reason": "reset",
             "time": "2026-09-27T09:00:45.826929+00:00"
           },
           "runs": 294
@@ -1116,19 +1124,20 @@
       ],
       "last_checked": "2026-10-16T05:15:30.586867+00:00",
       "name": "Website",
+      "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.nl/"
     },
     "website_be": {
+      "check": "website",
       "consecutive_failures": 0,
-      "detail": "200 OK",
-      "group": "Belgi\u00eb",
+      "country": "be",
       "history": [
         {
           "date": "2026-09-28",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-09-28T15:20:48.529596+00:00"
           },
           "runs": 217
@@ -1143,7 +1152,7 @@
           "date": "2026-09-30",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-09-30T04:56:13.361421+00:00"
           },
           "runs": 293
@@ -1152,7 +1161,7 @@
           "date": "2026-10-01",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: antwoord onvolledig",
+            "reason": "incomplete",
             "time": "2026-10-01T00:20:27.858271+00:00"
           },
           "runs": 293
@@ -1185,7 +1194,7 @@
           "date": "2026-10-06",
           "failed_runs": 4,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-10-06T19:40:46.563161+00:00"
           },
           "runs": 292
@@ -1230,7 +1239,7 @@
           "date": "2026-10-13",
           "failed_runs": 2,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-10-13T06:01:16.546043+00:00"
           },
           "runs": 291
@@ -1239,7 +1248,7 @@
           "date": "2026-10-14",
           "failed_runs": 1,
           "first_failure": {
-            "detail": "onbereikbaar: time-out",
+            "reason": "timeout",
             "time": "2026-10-14T02:05:38.728721+00:00"
           },
           "runs": 298
@@ -1259,6 +1268,7 @@
       ],
       "last_checked": "2026-10-16T05:15:32.902585+00:00",
       "name": "Website",
+      "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
     }

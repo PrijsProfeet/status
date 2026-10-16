@@ -88,58 +88,65 @@ STALL_THRESHOLD_MINUTES = 15
 # same box, so most outages hit both, and one page shows at a glance whether
 # it is one host or all of them. What can break for ONE host alone -- its DNS,
 # its Cloudflare zone, its certificate SAN, nginx `server_name` -- is exactly
-# why each gets its own rows. (country label, base url, service-key suffix)
+# why each gets its own rows. (country code, base url, service-key suffix)
 # NL keeps the unsuffixed keys so its history and incidents carry over.
 SITES = [
-    ("Nederland", "https://www.prijsprofeet.nl", ""),
-    ("België", "https://www.prijsprofeet.be", "_be"),
+    ("nl", "https://www.prijsprofeet.nl", ""),
+    ("be", "https://www.prijsprofeet.be", "_be"),
 ]
+# Dutch names for the feed and the incident names. The page does not read
+# them: it names a country in the visitor's language (app.js, STRINGS).
+COUNTRY_NAMES = {"nl": "Nederland", "be": "België"}
 
-
-
-# urllib's own wording, in Dutch. The page and the feed show what is stored,
-# so the stored text is translated, once, here; older rows are translated on
-# load (see _translate_details), so there is no second copy in app.js.
+# What status.json stores is a CODE, never a sentence: the page renders it in
+# the visitor's language (app.js, STRINGS.*.reason), and once the Belgian
+# storefront speaks French (prijsprofeet#1568) a stored Dutch sentence would be
+# untranslatable. The feed is Dutch and renders the same codes with REASON_TEXT.
 UNREACHABLE_REASONS = [
-    (re.compile(r"timed out", re.I), "time-out"),
-    (re.compile(r"connection reset", re.I), "verbinding verbroken"),
-    (re.compile(r"connection refused", re.I), "verbinding geweigerd"),
-    (re.compile(r"IncompleteRead"), "antwoord onvolledig"),
-    (re.compile(r"name or service not known|nodename nor servname|getaddrinfo", re.I), "DNS-fout"),
-    (re.compile(r"certificate|ssl", re.I), "TLS-fout"),
+    (re.compile(r"timed out", re.I), "timeout"),
+    (re.compile(r"connection reset", re.I), "reset"),
+    (re.compile(r"connection refused", re.I), "refused"),
+    (re.compile(r"IncompleteRead"), "incomplete"),
+    (re.compile(r"name or service not known|nodename nor servname|getaddrinfo", re.I), "dns"),
+    (re.compile(r"certificate|ssl", re.I), "tls"),
 ]
-CLOUDFLARE_REACHABLE = "bereikbaar (Cloudflare houdt geautomatiseerde checks hier bewust tegen)"
+REASON_TEXT = {
+    "ok": "200 OK",
+    "cloudflare": "bereikbaar (Cloudflare houdt geautomatiseerde checks hier bewust tegen)",
+    "timeout": "onbereikbaar: time-out",
+    "reset": "onbereikbaar: verbinding verbroken",
+    "refused": "onbereikbaar: verbinding geweigerd",
+    "incomplete": "onbereikbaar: antwoord onvolledig",
+    "dns": "onbereikbaar: DNS-fout",
+    "tls": "onbereikbaar: TLS-fout",
+    "unreachable": "onbereikbaar",
+    "mcp_invalid": "geen geldig MCP-antwoord",
+    "mcp_tools": "tool search of fetch ontbreekt",
+    "not_fresh": "data van vannacht niet bijgewerkt om 07:00",
+}
 
 
-def dutch_detail(detail: Optional[str]) -> Optional[str]:
-    """Translate a check detail. Idempotent: a Dutch detail stays as it is."""
-    if not detail:
-        return detail
-    if detail.startswith("reachable (Cloudflare"):
-        return CLOUDFLARE_REACHABLE
-    if detail.startswith("unreachable: "):
-        reason = detail.removeprefix("unreachable: ")
-        for pattern, dutch in UNREACHABLE_REASONS:
-            if pattern.search(reason):
-                return f"onbereikbaar: {dutch}"
-        return f"onbereikbaar: {reason}"
-    return detail
+def unreachable_reason(error: str) -> str:
+    """The code for a connection that failed; urllib's own wording is not kept."""
+    for pattern, code in UNREACHABLE_REASONS:
+        if pattern.search(error):
+            return code
+    return "unreachable"
 
 
-def _translate_details(data: dict[str, Any]) -> None:
-    for service in data.get("services", {}).values():
-        service["detail"] = dutch_detail(service.get("detail"))
-        for day in service.get("history", []):
-            if day.get("first_failure"):
-                day["first_failure"]["detail"] = dutch_detail(day["first_failure"].get("detail"))
-    for incident in data.get("incidents", []):
-        incident["detail"] = dutch_detail(incident.get("detail"))
+def reason_text(reason: Optional[str]) -> Optional[str]:
+    """Dutch for a reason code, for the feed. `http_503` reads as HTTP 503."""
+    if not reason:
+        return None
+    if reason.startswith("http_"):
+        return f"HTTP {reason.removeprefix('http_')}"
+    return REASON_TEXT.get(reason, reason)
 
 
 @dataclass
 class CheckResult:
     ok: bool
-    detail: str
+    reason: str
 
 
 def _fetch(
@@ -182,10 +189,10 @@ def check_api(base_url: str) -> CheckResult:
     """The API's own readiness probe — the same one the internal SLI hits."""
     status, _headers, _body, error = _fetch(f"{base_url}/api/v1/ready")
     if error:
-        return CheckResult(False, dutch_detail(f"unreachable: {error}"))
+        return CheckResult(False, unreachable_reason(error))
     if status == 200:
-        return CheckResult(True, "200 OK")
-    return CheckResult(False, f"HTTP {status}")
+        return CheckResult(True, "ok")
+    return CheckResult(False, f"http_{status}")
 
 
 def check_website(base_url: str) -> CheckResult:
@@ -200,13 +207,13 @@ def check_website(base_url: str) -> CheckResult:
     """
     status, headers, _body, error = _fetch(base_url + "/")
     if error:
-        return CheckResult(False, dutch_detail(f"unreachable: {error}"))
+        return CheckResult(False, unreachable_reason(error))
     if status == 200:
-        return CheckResult(True, "200 OK")
+        return CheckResult(True, "ok")
     if status == 403 and "cf-mitigated" in {k.lower() for k in headers}:
         # Cloudflare challenges automated checks here by design.
-        return CheckResult(True, CLOUDFLARE_REACHABLE)
-    return CheckResult(False, f"HTTP {status}")
+        return CheckResult(True, "cloudflare")
+    return CheckResult(False, f"http_{status}")
 
 
 MCP_PATH = "/api/v1/mcp"
@@ -227,17 +234,16 @@ def check_mcp(base_url: str) -> CheckResult:
     stateless, so one POST without `initialize` is a complete answer."""
     status, _headers, body, error = _fetch(base_url + MCP_PATH, MCP_TOOLS_LIST)
     if error:
-        return CheckResult(False, dutch_detail(f"unreachable: {error}"))
+        return CheckResult(False, unreachable_reason(error))
     if status != 200:
-        return CheckResult(False, f"HTTP {status}")
+        return CheckResult(False, f"http_{status}")
     try:
         tools = {t["name"] for t in json.loads(body)["result"]["tools"]}
     except (json.JSONDecodeError, KeyError, TypeError):
-        return CheckResult(False, "geen geldig MCP-antwoord")
-    missing = sorted(MCP_TOOLS - tools)
-    if missing:
-        return CheckResult(False, f"tool ontbreekt: {', '.join(missing)}")
-    return CheckResult(True, "200 OK, tools search en fetch")
+        return CheckResult(False, "mcp_invalid")
+    if MCP_TOOLS - tools:
+        return CheckResult(False, "mcp_tools")
+    return CheckResult(True, "ok")
 
 
 def fetch_sla_summary(base_url: str) -> Optional[dict[str, Any]]:
@@ -304,11 +310,8 @@ def _update_freshness(
         freshness[host] = summary
 
 
-FRESHNESS_DETAIL = "data van vannacht niet bijgewerkt om {fresh_by}"
-
-
 def _update_freshness_incidents(
-    data: dict[str, Any], host: str, group: str, summary: Optional[dict[str, Any]]
+    data: dict[str, Any], host: str, country: str, summary: Optional[dict[str, Any]]
 ) -> None:
     """A chain that is not fresh at fresh_by (07:00) is an incident on the page
     and in the feed, closed on the first morning it is fresh again. The probe
@@ -341,14 +344,17 @@ def _update_freshness_incidents(
             None,
         )
         if not fresh and ongoing is None:
+            chain_name = chain.get("name") or chain["retailer"]
             data["incidents"].append(
                 {
                     "service": key,
                     "kind": "versheid",
-                    "name": f"{chain.get('name') or chain['retailer']} ({group})",
+                    "country": country,
+                    "chain": chain_name,
+                    "name": f"{chain_name} ({COUNTRY_NAMES[country]})",
                     "started_at": at,
                     "resolved_at": None,
-                    "detail": FRESHNESS_DETAIL.format(fresh_by=fresh_by),
+                    "reason": "not_fresh",
                 }
             )
         elif fresh and ongoing is not None and at > ongoing["started_at"]:
@@ -392,7 +398,7 @@ def fetch_alerts(base_url: str) -> Optional[list[dict[str, Any]]]:
 def _update_alert_incidents(
     data: dict[str, Any],
     host: str,
-    group: str,
+    country: str,
     alerts: Optional[list[dict[str, Any]]],
     checked_at: str,
 ) -> None:
@@ -419,11 +425,17 @@ def _update_alert_incidents(
         data["incidents"].append(
             {
                 "service": key,
+                "kind": "alert",
                 "host": host,
-                "name": f"{alert['title']} ({group})" if group else alert["title"],
+                "country": country,
+                # The app's Dutch public_title. A French one comes with the
+                # French storefront (prijsprofeet#1568); until then the page
+                # shows this one in every language.
+                "title": alert["title"],
+                "name": f"{alert['title']} ({COUNTRY_NAMES[country]})",
                 "started_at": alert["since"],
                 "resolved_at": None,
-                "detail": None,
+                "reason": None,
             }
         )
 
@@ -460,7 +472,12 @@ def _load() -> dict[str, Any]:
 
 
 def _update_incidents(
-    data: dict[str, Any], key: str, name: str, result: CheckResult, checked_at: str
+    data: dict[str, Any],
+    key: str,
+    name: str,
+    result: CheckResult,
+    checked_at: str,
+    country: str = "",
 ) -> None:
     """Open an incident after INCIDENT_THRESHOLD consecutive failures on this
     service, and close it on the first success afterwards.
@@ -498,12 +515,13 @@ def _update_incidents(
         data["incidents"].append(
             {
                 "service": key,
+                "country": country,
                 "name": name,
                 # The outage began at the first failed check, not at the one
                 # that crossed the threshold (that put the start ~5 min late).
                 "started_at": service.get("failing_since", checked_at),
                 "resolved_at": None,
-                "detail": result.detail,
+                "reason": result.reason,
             }
         )
     elif streak > INCIDENT_THRESHOLD:
@@ -516,7 +534,7 @@ def _update_incidents(
             None,
         )
         if ongoing is not None:
-            ongoing["detail"] = result.detail  # keep the latest failure reason
+            ongoing["reason"] = result.reason  # keep the latest failure reason
 
 
 def _prune_incidents(data: dict[str, Any]) -> None:
@@ -538,16 +556,18 @@ def _update_service(
     name: str,
     target: str,
     result: CheckResult,
-    group: str = "",
+    country: str = "",
 ) -> None:
     service = data["services"].setdefault(
         key, {"name": name, "target": target, "history": [], "consecutive_failures": 0}
     )
     service["name"] = name
-    service["group"] = group
+    service["country"] = country
+    # website / api / mcp: what the page names the row, in the visitor's language.
+    service["check"] = key.removesuffix("_be")
     service["target"] = target
     service["status"] = "up" if result.ok else "down"
-    service["detail"] = result.detail
+    service["reason"] = result.reason
     service["last_checked"] = datetime.now(timezone.utc).isoformat()
 
     now = datetime.now(timezone.utc)
@@ -564,7 +584,7 @@ def _update_service(
         if day["first_failure"] is None:
             day["first_failure"] = {
                 "time": service["last_checked"],
-                "detail": result.detail,
+                "reason": result.reason,
             }
 
     cutoff = _local_day(now - timedelta(days=HISTORY_DAYS))
@@ -572,8 +592,8 @@ def _update_service(
     service["history"].sort(key=lambda d: d["date"])
 
     # An incident list mixes both countries, so it names the host too.
-    incident_name = f"{name} ({group})" if group else name
-    _update_incidents(data, key, incident_name, result, service["last_checked"])
+    incident_name = f"{name} ({COUNTRY_NAMES[country]})" if country else name
+    _update_incidents(data, key, incident_name, result, service["last_checked"], country)
 
 
 class NoticeError(ValueError):
@@ -708,7 +728,8 @@ def _feed_entries(
         if i.get("kind") == "versheid":
             entries.extend(_freshness_entries(i, key))
             continue
-        cause = f" Oorzaak volgens de check: {i['detail']}." if i.get("detail") else ""
+        detail = reason_text(i.get("reason"))
+        cause = f" Oorzaak volgens de check: {detail}." if detail else ""
         entries.append({
             "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:begin",
             "title": f"Storing: {i['name']}",
@@ -776,32 +797,31 @@ def main() -> int:
     now = datetime.now(timezone.utc)
     data["generated_at"] = now.isoformat()
 
-    for group, base_url, suffix in SITES:
+    for country, base_url, suffix in SITES:
         _update_service(
             data, "website" + suffix, "Website", base_url + "/",
-            with_retry(check_website, base_url), group,
+            with_retry(check_website, base_url), country,
         )
         _update_service(
             data, "api" + suffix, "API", base_url + "/api/v1/ready",
-            with_retry(check_api, base_url), group,
+            with_retry(check_api, base_url), country,
         )
         _update_service(
             data, "mcp" + suffix, "MCP-connector", base_url + MCP_PATH,
-            with_retry(check_mcp, base_url), group,
+            with_retry(check_mcp, base_url), country,
         )
 
-    for group, base_url, _suffix in SITES:
+    for country, base_url, _suffix in SITES:
         host = base_url.removeprefix("https://")
         _update_sla(data, host, fetch_sla_summary(base_url))
         freshness = fetch_freshness(base_url)
         _update_freshness(data, host, freshness)
-        _update_freshness_incidents(data, host, group, freshness)
+        _update_freshness_incidents(data, host, country, freshness)
         _update_alert_incidents(
-            data, host, group, fetch_alerts(base_url), now.isoformat()
+            data, host, country, fetch_alerts(base_url), now.isoformat()
         )
 
     _prune_incidents(data)
-    _translate_details(data)
 
     # A broken notices.json must not take the monitoring down with it: the
     # last valid notices stay, the run still writes, and only the exit code

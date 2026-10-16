@@ -15,65 +15,58 @@
 
   <header>
     <div class="brand">
-      <h1>PrijsProfeet status</h1>
-      <span class="checked" id="checked">Laden…</span>
+      <h1 data-t="title">PrijsProfeet status</h1>
+      <span class="checked" id="checked"></span>
     </div>
+    <!-- Filled by app.js. The links work without it: ?land=be is the whole state. -->
+    <nav class="switch" id="country-switch"></nav>
+    <!-- A language choice per country, shown once a country has more than one
+         (French on prijsprofeet.be, prijsprofeet#1568). -->
+    <nav class="switch" id="lang-switch" hidden></nav>
   </header>
 
   <!-- Ships with the "no data" state, not an optimistic green one: if the
        JSON never arrives, the page must not sit there claiming all is well. -->
   <div class="banner" id="banner" data-status="none">
     <span class="dot"></span>
-    <span class="banner-text">Status laden…</span>
+    <span class="banner-text" data-t="loading"></span>
   </div>
 
-  <section class="notices" id="notices" aria-label="Mededelingen" hidden></section>
+  <section class="notices" id="notices" hidden></section>
 
+  <!-- For visitors: one storefront at a time, in the visitor's language. -->
   <main id="services"></main>
 
-  <section class="incidents" id="incidents" hidden>
-    <h2>Incidenten</h2>
-    <p class="incidents-note">
-      Geopend na twee opeenvolgende mislukte checks (~10 min), zodat een enkele
-      time-out geen "incident" is. Dekt alleen wat deze probe zelf ziet
-      (bereikbaarheid van de site en de API) — niet elk intern alarm.
-    </p>
-    <ul id="incidents-list"></ul>
-  </section>
-
-  <section class="sla" id="sla" hidden>
-    <h2>Maandelijkse beschikbaarheid (Business SLA)</h2>
-    <p class="sla-note">
-      Dit is de contractuele meting: elke 30 seconden een check op
-      <code>/api/v1/ready</code> van elke host, via dezelfde publieke route als
-      een bezoeker (Cloudflare en nginx). Releases en onderhoud tellen gewoon
-      mee; er wordt niets uitgesloten. De norm van 99,5% geldt per host die je
-      gebruikt en wordt per host apart gemeten, nooit als gemiddelde. Zie de
-      <a href="https://prijsprofeet.nl/api-voorwaarden" rel="noopener">API-voorwaarden</a> (art. 10).
-    </p>
-    <div id="sla-tables"></div>
-  </section>
-
   <section class="sla" id="freshness" hidden>
-    <h2>Versheid per keten</h2>
-    <p class="sla-note">
-      Een keten is vers als de data van die nacht om 07:00 binnen is: de acties
-      ververst en, waar de keten ze levert, de schapprijzen en barcodes op peil.
-      Elke ochtend om 07:05 vastgelegd en daarna niet meer aangepast. De norm is
-      90% verse nachten per keten per kalendermaand. Per host, want
-      prijsprofeet.be heeft eigen ketens.
-    </p>
+    <h2 data-t="freshness_title"></h2>
+    <p class="sla-note" data-t="freshness_note"></p>
     <div id="freshness-tables"></div>
   </section>
 
+  <section class="incidents" id="incidents" hidden>
+    <h2 data-t="incidents_title"></h2>
+    <p class="incidents-note" data-t="incidents_note"></p>
+    <ul id="incidents-list"></ul>
+  </section>
+
+  <!-- For API customers: both hosts side by side, outside the country choice.
+       The API is one product under one contract (prijsprofeet#1131). -->
+  <section class="business" id="business">
+    <h2 data-t="business_title"></h2>
+    <p class="sla-note" data-t="business_note"></p>
+    <div class="panel" id="api-rows"></div>
+
+    <div class="sla" id="sla" hidden>
+      <h3 class="sla-title" data-t="sla_title"></h3>
+      <p class="sla-note"><span data-t="sla_note"></span>
+        <a href="https://www.prijsprofeet.nl/api-voorwaarden" rel="noopener" data-t="sla_terms"></a></p>
+      <div id="sla-tables"></div>
+    </div>
+  </section>
+
   <footer>
-    De checks hierboven lopen elke paar minuten vanaf GitHub Actions, buiten
-    het netwerk van PrijsProfeet, zodat een storing daar deze pagina niet
-    meesleurt. Elke balk is één dag (Nederlandse en Belgische tijd) over de laatste 31 dagen: groen is
-    alles geslaagd, oranje een dag met een incident, rood een dag waarop elke
-    check mislukte. Een omlijnde balk valt vóór de start van die host.
-    Storingen en mededelingen volgen? Abonneer je op de
-    <a href="data/incidents.xml">Atom-feed</a>.
+    <span data-t="footer"></span>
+    <a href="data/incidents.xml" data-t="footer_feed"></a>
     <span class="build" id="build"></span>
   </footer>
 

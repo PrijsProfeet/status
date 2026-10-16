@@ -26,6 +26,21 @@ monitors answers "up" from inside the very outage it should report.
 - `.github/workflows/probe.yml` runs that script every 5 minutes (best
   effort — GitHub can delay a scheduled run under load) and commits the
   updated JSON straight to `main`.
+- The page has two audiences. A visitor picks a storefront (`?land=nl` /
+  `?land=be`, remembered in localStorage, `nl-BE`/`fr-BE` browsers start on
+  België) and sees only that one: website, the connector in Claude and
+  ChatGPT, the freshness of its chains, its incidents, and a banner for that
+  storefront alone. API customers get a fixed block below with the API row of
+  each host and the Business SLA per host, outside the country choice.
+- `status.json` stores **codes, never sentences** (`country`, `check`,
+  `reason` such as `timeout` or `http_503`), so the page can render them in
+  the visitor's language. Every sentence on the page lives in `STRINGS` in
+  `app.js`; French for the Belgian storefront (prijsprofeet#1568) is a
+  `STRINGS.fr` table plus `'fr'` in `LANGS.be`, and the language switch then
+  appears by itself (`?taal=fr`). Alert titles come from the app in Dutch
+  until it publishes a French `public_title`. The Atom feed is Dutch and
+  renders the same codes through `REASON_TEXT` in `probe.py`; a test holds
+  both tables to the codes the checks write.
 - `index.html` / `app.js` / `styles.css` render `data/status.json` — no
   framework, no build step, no network calls off this origin, so the page
   itself can't be taken down by anything failing elsewhere. The one

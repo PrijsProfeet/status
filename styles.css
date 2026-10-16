@@ -269,3 +269,37 @@ a { color: inherit; }
 
 .notice-title { font-weight: 600; }
 .notice-body { margin-top: 2px; white-space: pre-line; }
+
+/* Country (and later language) choice: a segmented control of plain links. */
+.switch {
+  display: inline-flex;
+  margin-top: 12px;
+  margin-right: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.switch[hidden] { display: none; }
+.switch a {
+  padding: 6px 14px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.switch a + a { border-left: 1px solid var(--border); }
+.switch a[aria-current="true"] {
+  color: var(--text);
+  font-weight: 600;
+  background: var(--bg);
+}
+
+/* The API customers' block: visibly a separate part of the page. */
+.business {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.business h2 { font-size: 1.05rem; }
+.business .panel { margin-top: 12px; }
+.sla-title { font-size: 0.95rem; margin: 24px 0 4px; }
