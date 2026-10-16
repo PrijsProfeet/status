@@ -455,7 +455,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-16T21:35:21.299650+00:00",
+  "generated_at": "2026-10-16T21:40:28.993028+00:00",
   "incidents": [
     {
       "chain": "Albert Heijn",
@@ -708,10 +708,10 @@
           "date": "2026-10-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 293
+          "runs": 294
         }
       ],
-      "last_checked": "2026-10-16T21:35:22.445944+00:00",
+      "last_checked": "2026-10-16T21:40:29.909375+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -846,10 +846,10 @@
           "date": "2026-10-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 293
+          "runs": 294
         }
       ],
-      "last_checked": "2026-10-16T21:35:23.806142+00:00",
+      "last_checked": "2026-10-16T21:40:31.309097+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -864,10 +864,10 @@
           "date": "2026-10-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 208
+          "runs": 209
         }
       ],
-      "last_checked": "2026-10-16T21:35:22.692854+00:00",
+      "last_checked": "2026-10-16T21:40:30.139184+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -882,10 +882,10 @@
           "date": "2026-10-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 208
+          "runs": 209
         }
       ],
-      "last_checked": "2026-10-16T21:35:24.049668+00:00",
+      "last_checked": "2026-10-16T21:40:31.544937+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1119,10 +1119,10 @@
           "date": "2026-10-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 293
+          "runs": 294
         }
       ],
-      "last_checked": "2026-10-16T21:35:22.204504+00:00",
+      "last_checked": "2026-10-16T21:40:29.678776+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1263,10 +1263,10 @@
           "date": "2026-10-16",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 293
+          "runs": 294
         }
       ],
-      "last_checked": "2026-10-16T21:35:23.570329+00:00",
+      "last_checked": "2026-10-16T21:40:31.087739+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1278,22 +1278,22 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.9998044371047999,
-          "availability_pct": 99.9804,
+          "availability": 0.999804522056428,
+          "availability_pct": 99.9805,
           "closed": false,
           "downtime_minutes": 4.5,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-16T21:30:41.701207+00:00",
+          "measured_to": "2026-10-16T21:40:32.645482+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 8,
-            "expected": 46021,
-            "good": 46013,
+            "expected": 46041,
+            "good": 46033,
             "missing": 1
           },
           "step_seconds": 30,
@@ -1408,22 +1408,22 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.9997827078942222,
+          "availability": 0.99978280228492,
           "availability_pct": 99.9783,
           "closed": false,
           "downtime_minutes": 5.0,
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-16T21:30:40.498213+00:00",
+          "measured_to": "2026-10-16T21:40:31.700954+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 7,
-            "expected": 46021,
-            "good": 46011,
+            "expected": 46041,
+            "good": 46031,
             "missing": 3
           },
           "step_seconds": 30,
