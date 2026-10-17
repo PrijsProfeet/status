@@ -36,9 +36,12 @@ DATA_FILE = ROOT / "data" / "status.json"
 # the page and in the feed.
 NOTICES_FILE = ROOT / "notices.json"
 FEED_FILE = ROOT / "data" / "incidents.xml"
+# The same incidents in English, for API customers (prijsprofeet#1670).
+FEED_FILE_EN = ROOT / "data" / "incidents.en.xml"
 
 SITE_URL = "https://status.prijsprofeet.nl/"
 FEED_URL = SITE_URL + "data/incidents.xml"
+FEED_URL_EN = SITE_URL + "data/incidents.en.xml"
 # Newest entries kept in the feed. A reader only needs what it has not seen.
 FEED_ENTRIES = 50
 # The feed's <updated> when it holds no entries at all. A constant, never the
@@ -97,6 +100,7 @@ SITES = [
 # Dutch names for the feed and the incident names. The page does not read
 # them: it names a country in the visitor's language (app.js, STRINGS).
 COUNTRY_NAMES = {"nl": "Nederland", "be": "België"}
+COUNTRY_NAMES_EN = {"nl": "Netherlands", "be": "Belgium"}
 
 # What status.json stores is a CODE, never a sentence: the page renders it in
 # the visitor's language (app.js, STRINGS.*.reason), and once the Belgian
@@ -134,13 +138,31 @@ def unreachable_reason(error: str) -> str:
     return "unreachable"
 
 
-def reason_text(reason: Optional[str]) -> Optional[str]:
-    """Dutch for a reason code, for the feed. `http_503` reads as HTTP 503."""
+# The English feed renders the same codes (prijsprofeet#1670). A test holds
+# both tables to the codes the checks write.
+REASON_TEXT_EN = {
+    "ok": "200 OK",
+    "cloudflare": "reachable (Cloudflare deliberately blocks automated checks here)",
+    "timeout": "unreachable: timeout",
+    "reset": "unreachable: connection reset",
+    "refused": "unreachable: connection refused",
+    "incomplete": "unreachable: incomplete response",
+    "dns": "unreachable: DNS error",
+    "tls": "unreachable: TLS error",
+    "unreachable": "unreachable",
+    "mcp_invalid": "no valid MCP answer",
+    "mcp_tools": "tool search or fetch is missing",
+    "not_fresh": "last night's data not updated by 07:00",
+}
+
+
+def reason_text(reason: Optional[str], lang: str = "nl") -> Optional[str]:
+    """A reason code in words, for the feed. `http_503` reads as HTTP 503."""
     if not reason:
         return None
     if reason.startswith("http_"):
         return f"HTTP {reason.removeprefix('http_')}"
-    return REASON_TEXT.get(reason, reason)
+    return (REASON_TEXT_EN if lang == "en" else REASON_TEXT).get(reason, reason)
 
 
 @dataclass
@@ -651,12 +673,20 @@ def load_notices(path: Path = NOTICES_FILE) -> list[dict[str, Any]]:
             "published": published.isoformat(),
             "until": None,
         }
+        # English is optional (prijsprofeet#1670): without it, the English page
+        # and feed show the Dutch notice. Both or neither.
+        english = [f for f in ("title_en", "body_en") if f in item]
+        if english:
+            for field in ("title_en", "body_en"):
+                if not isinstance(item.get(field), str) or not item[field].strip():
+                    raise NoticeError(f"notice {notice_id!r}: title_en and body_en go together")
+                notice[field] = item[field].strip()
         if item.get("until") is not None:
             until = _aware(item["until"], "until", notice_id)
             if until <= published:
                 raise NoticeError(f"notice {notice_id!r}: until lies before published")
             notice["until"] = until.isoformat()
-        unknown = set(item) - {"id", "title", "body", "published", "until"}
+        unknown = set(item) - {"id", "title", "body", "published", "until", "title_en", "body_en"}
         if unknown:
             raise NoticeError(f"notice {notice_id!r}: unknown field(s) {sorted(unknown)}")
         notices.append(notice)
@@ -670,101 +700,175 @@ MONTHS_NL = [
 ]
 
 
-def _when(iso: str) -> str:
+MONTHS_EN = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+]  # fmt: skip
+
+# The feed's sentences, per language. Dutch is the feed this page has always
+# had; English is for API customers (prijsprofeet#1670).
+FEED_TEXT = {
+    "nl": {
+        "feed_title": "PrijsProfeet status: storingen en mededelingen",
+        "not_fresh": "Niet vers: {name}",
+        "not_fresh_text": (
+            "Om {at} was de data van deze keten niet bijgewerkt. Tot hij weer vers "
+            "is kunnen zijn prijzen verouderd zijn."
+        ),
+        "fresh_again": "Weer vers: {name}",
+        "fresh_again_text": "Weer vers {at}, na {duration} (niet vers sinds {start}).",
+        "outage": "Storing: {name}",
+        "outage_text": "Begonnen {start}.{cause}",
+        "cause": " Oorzaak volgens de check: {detail}.",
+        "resolved": "Opgelost: {name}",
+        "resolved_text": "Opgelost {at}, na {duration} (begonnen {start}).",
+        "until": " Geldt tot {until}.",
+    },
+    "en": {
+        "feed_title": "PrijsProfeet status: outages and notices",
+        "not_fresh": "Not fresh: {name}",
+        "not_fresh_text": (
+            "At {at} this chain's data had not been updated. Until it is fresh "
+            "again, its prices may be out of date."
+        ),
+        "fresh_again": "Fresh again: {name}",
+        "fresh_again_text": "Fresh again {at}, after {duration} (not fresh since {start}).",
+        "outage": "Outage: {name}",
+        "outage_text": "Started {start}.{cause}",
+        "cause": " Cause according to the check: {detail}.",
+        "resolved": "Resolved: {name}",
+        "resolved_text": "Resolved {at}, after {duration} (started {start}).",
+        "until": " Valid until {until}.",
+    },
+}
+# What the English feed calls a check; the Dutch one keeps the stored name.
+CHECK_NAMES_EN = {"website": "Website", "api": "API", "mcp": "MCP connector"}
+
+
+def _when(iso: str, lang: str = "nl") -> str:
     """'7 oktober 00:35', in Amsterdam time — the time a Dutch or Belgian
     reader lives in, whatever the runner's clock says."""
     t = datetime.fromisoformat(iso).astimezone(AMSTERDAM)
-    return f"{t.day} {MONTHS_NL[t.month - 1]} {t:%H:%M}"
+    months = MONTHS_EN if lang == "en" else MONTHS_NL
+    return f"{t.day} {months[t.month - 1]} {t:%H:%M}"
 
 
-def _duration(start: str, end: str) -> str:
+def _duration(start: str, end: str, lang: str = "nl") -> str:
     minutes = round(
         (datetime.fromisoformat(end) - datetime.fromisoformat(start)).total_seconds() / 60
     )
+    en = lang == "en"
+    hour = "h" if en else "u"
     if minutes < 1:
-        return "minder dan een minuut"
+        return "less than a minute" if en else "minder dan een minuut"
     if minutes < 60:
         return f"{minutes} min"
     hours, rest = divmod(minutes, 60)
     if hours >= 24:
         days, hours = divmod(hours, 24)
-        text = f"{days} dag" if days == 1 else f"{days} dagen"
-        return f"{text} {hours} u" if hours else text
-    return f"{hours} u {rest} min" if rest else f"{hours} u"
+        if en:
+            text = "1 day" if days == 1 else f"{days} days"
+        else:
+            text = f"{days} dag" if days == 1 else f"{days} dagen"
+        return f"{text} {hours} {hour}" if hours else text
+    return f"{hours} {hour} {rest} min" if rest else f"{hours} {hour}"
 
 
-def _freshness_entries(i: dict[str, Any], key: str) -> list[dict[str, str]]:
+def _incident_name(i: dict[str, Any], lang: str) -> str:
+    """The stored Dutch name, or the English one built from the codes."""
+    if lang != "en":
+        return i["name"]
+    # A check's key says its host too (`api_be`), for incidents from before
+    # `country` was stored on them.
+    code = i.get("country") or ("be" if i["service"].endswith("_be") else "nl")
+    country = COUNTRY_NAMES_EN.get(code)
+    if i.get("kind") == "alert":
+        base = i.get("title_en") or i["title"]
+    elif i.get("kind") == "versheid":
+        base = i.get("chain") or i["name"]
+    else:
+        base = CHECK_NAMES_EN.get(i["service"].removesuffix("_be"), i["name"])
+    return f"{base} ({country})" if country else base
+
+
+def _freshness_entries(i: dict[str, Any], key: str, lang: str) -> list[dict[str, str]]:
     """The feed's words for a chain that was not fresh: the data stood still,
     our API did not go down."""
+    text = FEED_TEXT[lang]
+    name = _incident_name(i, lang)
     entries = [{
         "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:begin",
-        "title": f"Niet vers: {i['name']}",
+        "title": text["not_fresh"].format(name=name),
         "at": i["started_at"],
-        "text": (
-            f"Om {_when(i['started_at'])} was de data van deze keten niet "
-            "bijgewerkt. Tot hij weer vers is kunnen zijn prijzen verouderd zijn."
-        ),
+        "text": text["not_fresh_text"].format(at=_when(i["started_at"], lang)),
     }]
     if i.get("resolved_at"):
         entries.append({
             "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:einde",
-            "title": f"Weer vers: {i['name']}",
+            "title": text["fresh_again"].format(name=name),
             "at": i["resolved_at"],
-            "text": (
-                f"Weer vers {_when(i['resolved_at'])}, na "
-                f"{_duration(i['started_at'], i['resolved_at'])} "
-                f"(niet vers sinds {_when(i['started_at'])})."
+            "text": text["fresh_again_text"].format(
+                at=_when(i["resolved_at"], lang),
+                duration=_duration(i["started_at"], i["resolved_at"], lang),
+                start=_when(i["started_at"], lang),
             ),
         })
     return entries
 
 
 def _feed_entries(
-    incidents: list[dict[str, Any]], notices: list[dict[str, Any]]
+    incidents: list[dict[str, Any]], notices: list[dict[str, Any]], lang: str = "nl"
 ) -> list[dict[str, str]]:
     """One entry when an incident opens and a SECOND when it is resolved: a
     feed reader notifies on a new id, not on an updated one, so a resolution
-    folded into the first entry would never reach anyone."""
+    folded into the first entry would never reach anyone. The ids are the same
+    in every language: an entry is one event."""
+    text = FEED_TEXT[lang]
     entries = []
     for i in incidents:
         key = f"{i['service']}:{i['started_at']}"
         if i.get("kind") == "versheid":
-            entries.extend(_freshness_entries(i, key))
+            entries.extend(_freshness_entries(i, key, lang))
             continue
-        detail = reason_text(i.get("reason"))
-        cause = f" Oorzaak volgens de check: {detail}." if detail else ""
+        name = _incident_name(i, lang)
+        detail = reason_text(i.get("reason"), lang)
+        cause = text["cause"].format(detail=detail) if detail else ""
         entries.append({
             "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:begin",
-            "title": f"Storing: {i['name']}",
+            "title": text["outage"].format(name=name),
             "at": i["started_at"],
-            "text": f"Begonnen {_when(i['started_at'])}.{cause}",
+            "text": text["outage_text"].format(start=_when(i["started_at"], lang), cause=cause),
         })
         if i.get("resolved_at"):
             entries.append({
                 "id": f"tag:status.prijsprofeet.nl,2026:incident:{key}:einde",
-                "title": f"Opgelost: {i['name']}",
+                "title": text["resolved"].format(name=name),
                 "at": i["resolved_at"],
-                "text": (
-                    f"Opgelost {_when(i['resolved_at'])}, na "
-                    f"{_duration(i['started_at'], i['resolved_at'])} "
-                    f"(begonnen {_when(i['started_at'])})."
+                "text": text["resolved_text"].format(
+                    at=_when(i["resolved_at"], lang),
+                    duration=_duration(i["started_at"], i["resolved_at"], lang),
+                    start=_when(i["started_at"], lang),
                 ),
             })
     for n in notices:
-        until = f" Geldt tot {_when(n['until'])}." if n["until"] else ""
+        until = text["until"].format(until=_when(n["until"], lang)) if n["until"] else ""
+        english = lang == "en" and "title_en" in n
         entries.append({
             "id": f"tag:status.prijsprofeet.nl,2026:mededeling:{n['id']}",
-            "title": n["title"],
+            "title": n["title_en"] if english else n["title"],
             "at": n["published"],
-            "text": f"{n['body']}{until}",
+            "text": f"{n['body_en'] if english else n['body']}{until}",
         })
     entries.sort(key=lambda e: datetime.fromisoformat(e["at"]), reverse=True)
     return entries[:FEED_ENTRIES]
 
 
-def build_feed(incidents: list[dict[str, Any]], notices: list[dict[str, Any]]) -> str:
-    """An Atom feed of incidents and notices. Deterministic: the same input
-    gives the same bytes, so the file only changes when an entry does."""
+def build_feed(
+    incidents: list[dict[str, Any]], notices: list[dict[str, Any]], lang: str = "nl"
+) -> str:
+    """An Atom feed of incidents and notices, in Dutch or English. Deterministic:
+    the same input gives the same bytes, so the file only changes when an entry
+    does."""
     ET.register_namespace("", ATOM_NS)
 
     def sub(parent: ET.Element, tag: str, text: Optional[str] = None, **attrs: str) -> ET.Element:
@@ -773,13 +877,15 @@ def build_feed(incidents: list[dict[str, Any]], notices: list[dict[str, Any]]) -
             node.text = text
         return node
 
-    entries = _feed_entries(incidents, notices)
-    feed = ET.Element(f"{{{ATOM_NS}}}feed", {"xml:lang": "nl"})
-    sub(feed, "id", SITE_URL)
-    sub(feed, "title", "PrijsProfeet status: storingen en mededelingen")
+    entries = _feed_entries(incidents, notices, lang)
+    site = SITE_URL + ("?taal=en" if lang == "en" else "")
+    feed = ET.Element(f"{{{ATOM_NS}}}feed", {"xml:lang": lang})
+    # Its own id: a reader subscribed to both must see two feeds, not one.
+    sub(feed, "id", FEED_URL_EN if lang == "en" else SITE_URL)
+    sub(feed, "title", FEED_TEXT[lang]["feed_title"])
     sub(feed, "updated", entries[0]["at"] if entries else FEED_EPOCH)
-    sub(feed, "link", rel="self", href=FEED_URL)
-    sub(feed, "link", rel="alternate", href=SITE_URL)
+    sub(feed, "link", rel="self", href=FEED_URL_EN if lang == "en" else FEED_URL)
+    sub(feed, "link", rel="alternate", href=site)
     author = sub(feed, "author")
     sub(author, "name", "PrijsProfeet")
     for e in entries:
@@ -788,7 +894,7 @@ def build_feed(incidents: list[dict[str, Any]], notices: list[dict[str, Any]]) -
         sub(entry, "title", e["title"])
         sub(entry, "updated", e["at"])
         sub(entry, "published", e["at"])
-        sub(entry, "link", rel="alternate", href=SITE_URL)
+        sub(entry, "link", rel="alternate", href=site)
         sub(entry, "content", e["text"], type="text")
     ET.indent(feed)
     return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
@@ -839,6 +945,7 @@ def main() -> int:
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     DATA_FILE.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
     FEED_FILE.write_text(build_feed(data["incidents"], data["notices"]))
+    FEED_FILE_EN.write_text(build_feed(data["incidents"], data["notices"], "en"))
 
     failures = [
         s["name"] for s in data["services"].values() if s["status"] != "up"

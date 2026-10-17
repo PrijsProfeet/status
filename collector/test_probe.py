@@ -676,6 +676,43 @@ class TestFeed(unittest.TestCase):
         empty = self._parse(probe.build_feed([], []))
         self.assertEqual(empty.findtext(f"{{{probe.ATOM_NS}}}updated"), probe.FEED_EPOCH)
 
+    def test_the_english_feed_speaks_english_with_the_same_ids(self):
+        nl = self._parse(probe.build_feed([self.INCIDENT], []))
+        en = self._parse(probe.build_feed([self.INCIDENT], [], "en"))
+        entries = lambda root: list(root.iter(f"{{{probe.ATOM_NS}}}entry"))  # noqa: E731
+        titles = [e.findtext(f"{{{probe.ATOM_NS}}}title") for e in entries(en)]
+        self.assertEqual(titles, ["Resolved: API (Belgium)", "Outage: API (Belgium)"])
+        ids = lambda root: [e.findtext(f"{{{probe.ATOM_NS}}}id") for e in entries(root)]  # noqa: E731
+        self.assertEqual(ids(nl), ids(en))
+        self.assertNotEqual(
+            nl.findtext(f"{{{probe.ATOM_NS}}}id"), en.findtext(f"{{{probe.ATOM_NS}}}id")
+        )
+        xml = probe.build_feed([self.INCIDENT], [], "en")
+        self.assertIn('xml:lang="en"', xml)
+        self.assertIn("Started 7 October 00:35", xml)
+        self.assertIn("after 5 min", xml)
+
+    def test_the_english_feed_names_an_alert_and_a_chain_in_english(self):
+        alert = dict(
+            self.INCIDENT, service="alert:PublicAPISlow", kind="alert", country="be",
+            title="De API reageert traag", title_en="The API is responding slowly",
+        )
+        chain = dict(
+            self.INCIDENT, service="versheid:albert_heijn:x", kind="versheid",
+            chain="Albert Heijn", country="nl", reason="not_fresh",
+        )
+        xml = probe.build_feed([alert, chain], [], "en")
+        self.assertIn("Outage: The API is responding slowly (Belgium)", xml)
+        self.assertIn("Not fresh: Albert Heijn (Netherlands)", xml)
+
+    def test_a_notice_in_english_or_else_dutch(self):
+        notice = dict(self.NOTICE, title_en="Maintenance", body_en="Briefly unreachable.")
+        self.assertIn("Maintenance", probe.build_feed([], [notice], "en"))
+        self.assertIn("Onderhoud", probe.build_feed([], [self.NOTICE], "en"))
+
+    def test_every_reason_code_has_english_too(self):
+        self.assertEqual(set(probe.REASON_TEXT), set(probe.REASON_TEXT_EN))
+
     def test_markup_in_a_notice_is_escaped(self):
         notice = dict(self.NOTICE, body="<script>x</script> & meer")
         xml = probe.build_feed([], [notice])

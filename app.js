@@ -375,7 +375,7 @@ const STRINGS = {
       'there does not take this page down with it. Each bar is one day (Dutch and Belgian time) over the last 31 ' +
       'days: green means everything passed, orange a day with an incident, red a day on which every check failed. ' +
       'An outlined bar falls before that host went live. Want to follow outages and notices? Subscribe to the',
-    footer_feed: 'Atom feed (in Dutch)',
+    footer_feed: 'Atom feed',
   },
 };
 
@@ -458,6 +458,10 @@ function applyStaticText() {
   document.querySelectorAll('[data-t]').forEach((node) => {
     node.textContent = t(node.dataset.t);
   });
+  // The feed exists in Dutch and English (probe.py, FEED_TEXT); French readers
+  // get the Dutch one, which their footer text says.
+  document.getElementById('feed-link').href =
+    choice.lang === 'en' ? 'data/incidents.en.xml' : 'data/incidents.xml';
 }
 
 function renderSwitches() {
@@ -990,8 +994,9 @@ function renderNotices(notices) {
   section.innerHTML = '';
   for (const n of current) {
     const item = el('div', 'notice');
-    item.appendChild(el('div', 'notice-title', n.title));
-    item.appendChild(el('div', 'notice-body', n.body));
+    const english = choice.lang === 'en' && n.title_en;
+    item.appendChild(el('div', 'notice-title', english ? n.title_en : n.title));
+    item.appendChild(el('div', 'notice-body', english ? n.body_en : n.body));
     item.appendChild(
       el(
         'div',
