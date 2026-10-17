@@ -428,11 +428,13 @@ def _update_alert_incidents(
                 "kind": "alert",
                 "host": host,
                 "country": country,
-                # The app's public titles: Dutch, and French for the Belgian
-                # page in French (prijsprofeet#1568), which falls back to the
-                # Dutch one when the app sends none.
+                # The app's public titles: Dutch, French for the Belgian page
+                # in French (prijsprofeet#1568) and English for API customers
+                # (prijsprofeet#1670); either falls back to the Dutch one when
+                # the app sends none.
                 "title": alert["title"],
                 "title_fr": alert.get("title_fr") if isinstance(alert.get("title_fr"), str) else None,
+                "title_en": alert.get("title_en") if isinstance(alert.get("title_en"), str) else None,
                 "name": f"{alert['title']} ({COUNTRY_NAMES[country]})",
                 "started_at": alert["since"],
                 "resolved_at": None,
