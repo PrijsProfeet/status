@@ -428,10 +428,11 @@ def _update_alert_incidents(
                 "kind": "alert",
                 "host": host,
                 "country": country,
-                # The app's Dutch public_title. A French one comes with the
-                # French storefront (prijsprofeet#1568); until then the page
-                # shows this one in every language.
+                # The app's public titles: Dutch, and French for the Belgian
+                # page in French (prijsprofeet#1568), which falls back to the
+                # Dutch one when the app sends none.
                 "title": alert["title"],
+                "title_fr": alert.get("title_fr") if isinstance(alert.get("title_fr"), str) else None,
                 "name": f"{alert['title']} ({COUNTRY_NAMES[country]})",
                 "started_at": alert["since"],
                 "resolved_at": None,

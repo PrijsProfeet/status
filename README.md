@@ -35,10 +35,11 @@ monitors answers "up" from inside the very outage it should report.
 - `status.json` stores **codes, never sentences** (`country`, `check`,
   `reason` such as `timeout` or `http_503`), so the page can render them in
   the visitor's language. Every sentence on the page lives in `STRINGS` in
-  `app.js`; French for the Belgian storefront (prijsprofeet#1568) is a
-  `STRINGS.fr` table plus `'fr'` in `LANGS.be`, and the language switch then
-  appears by itself (`?taal=fr`). Alert titles come from the app in Dutch
-  until it publishes a French `public_title`. The Atom feed is Dutch and
+  `app.js`; België speaks Dutch and French (prijsprofeet#1568): `STRINGS.fr`
+  plus `'fr'` in `LANGS.be`, and the language switch shows (`?taal=fr`). An
+  alert carries the app's Dutch `title` and French `title_fr` (`public_title_fr`
+  in its alerts.yml); without the latter the French page shows the Dutch one.
+  The Atom feed is Dutch and
   renders the same codes through `REASON_TEXT` in `probe.py`; a test holds
   both tables to the codes the checks write.
 - `index.html` / `app.js` / `styles.css` render `data/status.json` — no

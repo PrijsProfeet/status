@@ -491,6 +491,14 @@ class TestAlertIncidents(unittest.TestCase):
         self.assertEqual(incident["started_at"], self.SLOW["since"])
         self.assertIsNone(incident["resolved_at"])
 
+    def test_the_french_title_is_kept_and_its_absence_is_none(self):
+        data = _fresh_data()
+        frans = {**self.SLOW, "title_fr": "L’API répond lentement"}
+        _update_alert_incidents(data, self.BE, "be", [frans], "2026-10-13T10:20:00+00:00")
+        _update_alert_incidents(data, self.NL, "nl", [self.SLOW], "2026-10-13T10:20:00+00:00")
+        by_host = {i["host"]: i["title_fr"] for i in data["incidents"]}
+        self.assertEqual(by_host, {self.BE: "L’API répond lentement", self.NL: None})
+
     def test_no_answer_changes_nothing_and_an_answer_without_it_closes_it(self):
         data = _fresh_data()
         _update_alert_incidents(data, self.NL, "nl", [self.SLOW], "2026-10-13T10:20:00+00:00")
