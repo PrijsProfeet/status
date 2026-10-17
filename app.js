@@ -27,10 +27,15 @@ const CLOCK_TICK_MS = 15_000;
 const STALE_AFTER_MINUTES = 20;
 
 // The storefronts, and the languages each one speaks. België speaks Dutch and
-// French, like its storefront (prijsprofeet#1568); a language listed here needs
-// a STRINGS table, and the language switch appears on its own.
+// French, like its storefront (prijsprofeet#1568); English is there for API
+// customers on both (prijsprofeet#1670). A language listed here needs a STRINGS
+// table, and the language switch appears on its own.
 const COUNTRIES = ['nl', 'be'];
-const LANGS = { nl: ['nl'], be: ['nl', 'fr'] };
+const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'en'] };
+// Never picked from the browser: plenty of Dutch and Belgian visitors run an
+// English browser and read the consumer site in Dutch. English comes from the
+// switch or from a link (?taal=en, which the English API pages use).
+const NOT_FROM_BROWSER = ['en'];
 const HOSTS = { nl: 'www.prijsprofeet.nl', be: 'www.prijsprofeet.be' };
 // Rows shown to visitors, in this order. The API rows sit in the business block.
 const VISITOR_CHECKS = ['website', 'mcp'];
@@ -50,6 +55,7 @@ const STRINGS = {
     country_be: 'België',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
+    lang_en: 'English',
     updated: 'Bijgewerkt {ago}',
     last_check: 'Laatste check: {when}',
     load_failed: 'Statusgegevens konden niet worden geladen',
@@ -160,6 +166,7 @@ const STRINGS = {
     country_be: 'Belgique',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
+    lang_en: 'English',
     updated: 'Mis à jour {ago}',
     last_check: 'Dernière vérification : {when}',
     load_failed: 'Impossible de charger les données de statut',
@@ -261,6 +268,115 @@ const STRINGS = {
       'Suivre les pannes et les annonces ? Abonnez-vous au',
     footer_feed: 'flux Atom (en néerlandais)',
   },
+  en: {
+    title: 'PrijsProfeet status',
+    loading: 'Loading status…',
+    choose_country: 'Choose your country',
+    choose_lang: 'Choose your language',
+    country_nl: 'Netherlands',
+    country_be: 'Belgium',
+    lang_nl: 'Nederlands',
+    lang_fr: 'Français',
+    lang_en: 'English',
+    updated: 'Updated {ago}',
+    last_check: 'Last check: {when}',
+    load_failed: 'Status data could not be loaded',
+    banner: { up: 'All systems working', degraded: 'Partial outage', down: 'Outage', none: 'No data' },
+    banner_stale: 'Data out of date: the last check was {ago}',
+    status: { up: 'Operational', degraded: 'Degraded', down: 'Outage', none: 'No data' },
+    no_recent_check: 'No recent check',
+    checked: 'Checked {ago}',
+    check_website: 'Website',
+    check_mcp: 'In Claude and ChatGPT',
+    check_api: 'API',
+    reason: {
+      ok: '200 OK',
+      cloudflare: 'reachable (Cloudflare deliberately blocks automated checks here)',
+      timeout: 'unreachable: timeout',
+      reset: 'unreachable: connection reset',
+      refused: 'unreachable: connection refused',
+      incomplete: 'unreachable: incomplete response',
+      dns: 'unreachable: DNS error',
+      tls: 'unreachable: TLS error',
+      unreachable: 'unreachable',
+      mcp_invalid: 'no valid answer from the connector',
+      mcp_tools: 'the connector is missing a tool (search or fetch)',
+      not_fresh: 'last night’s data not updated by 07:00',
+      http: 'HTTP {status}',
+    },
+    ago: {
+      never: 'never',
+      unknown: 'unknown',
+      now: 'just now',
+      minutes: (n) => (n === 1 ? '1 minute ago' : `${n} minutes ago`),
+      hours: (n) => (n === 1 ? '1 hour ago' : `${n} hours ago`),
+      days: (n) => `${n} days ago`,
+    },
+    duration: {
+      under_minute: 'less than a minute',
+      minutes: '{n} min',
+      hours: '{h} h',
+      hours_minutes: '{h} h {m} min',
+      days: (n) => (n === 1 ? '1 day' : `${n} days`),
+      days_hours: '{days} {h} h',
+    },
+    day_not_measured: 'Not measured yet',
+    day_no_checks: 'No checks recorded',
+    day_all_ok: '{runs} checks, all passed',
+    day_failed: '{failed} of {runs} checks failed',
+    day_no_incident: (n) => (n === 1 ? 'single check, no incident' : 'single checks, no incident'),
+    incidents_title: 'Incidents',
+    incidents_note:
+      'Opened after two failed checks in a row (~10 min), so a single timeout is not an "incident". ' +
+      'Covers what this probe sees itself, plus the outages our own monitoring reports publicly.',
+    ongoing: 'Ongoing',
+    since: 'since {start}',
+    lasted: '{start}, lasted {duration}',
+    not_fresh_incident: '{chain}: not fresh',
+    notice_meta: 'Posted {published}',
+    notice_until: ' · valid until {until}',
+    freshness_title: 'Freshness per chain',
+    freshness_note:
+      'A chain is fresh when that night’s data is in by 07:00: the promotions refreshed and, where the chain ' +
+      'supplies them, the shelf prices and barcodes at their usual level. Recorded every morning at 07:05 and not ' +
+      'changed afterwards. The target is 90% fresh nights per chain per calendar month.',
+    fresh_this_morning: 'This morning ({day})',
+    fresh_on: 'On {day}',
+    fresh_lead: '{when}: {fresh} of {total} chains fresh.',
+    fresh_not: ' Not fresh: {names}.',
+    fresh_unmeasured: ' Not measured yet: {names}.',
+    fresh_details: 'Per chain and per month',
+    col_chain: 'Chain',
+    col_at_seven: 'At 07:00',
+    running: ' (running)',
+    not_measured: 'not measured yet',
+    fresh: 'fresh',
+    not_fresh: 'not fresh',
+    business_title: 'For API customers',
+    business_note:
+      'The API and the Business SLA, for both hosts. One key works on both; the host decides the country of the data.',
+    sla_title: 'Monthly availability (Business SLA)',
+    sla_note:
+      'This is the contractual measurement: every 30 seconds a check of /api/v1/ready on each host, through the same ' +
+      'public route as a visitor (Cloudflare and nginx). Releases and maintenance count as normal; nothing is ' +
+      'excluded. The 99.5% target applies per host you use and is measured per host, never as an average. See the',
+    sla_terms: 'API terms (art. 10, in Dutch)',
+    col_month: 'Month',
+    col_availability: 'Availability',
+    col_downtime: 'Downtime',
+    col_target: 'Target: {pct}%',
+    downtime_none: 'none',
+    sla_running: 'running',
+    sla_met: 'met',
+    sla_missed: 'missed',
+    measured_from: '{month} (measured from {day})',
+    footer:
+      'The checks above run every few minutes from GitHub Actions, outside PrijsProfeet’s network, so an outage ' +
+      'there does not take this page down with it. Each bar is one day (Dutch and Belgian time) over the last 31 ' +
+      'days: green means everything passed, orange a day with an incident, red a day on which every check failed. ' +
+      'An outlined bar falls before that host went live. Want to follow outages and notices? Subscribe to the',
+    footer_feed: 'Atom feed (in Dutch)',
+  },
 };
 
 let lastData = null;
@@ -286,9 +402,11 @@ function initialChoice() {
     ) || 'nl';
   const langs = LANGS[country];
   const lang =
-    [params.get('taal'), stored.lang, ...browser.map((l) => l.slice(0, 2).toLowerCase())].find((l) =>
-      langs.includes(l),
-    ) || langs[0];
+    [
+      params.get('taal'),
+      stored.lang,
+      ...browser.map((l) => l.slice(0, 2).toLowerCase()).filter((l) => !NOT_FROM_BROWSER.includes(l)),
+    ].find((l) => langs.includes(l)) || langs[0];
   return { country, lang };
 }
 
@@ -895,7 +1013,7 @@ function incidentsOf(data, country) {
 // own titles: French when the app sent one (prijsprofeet#1568), else Dutch.
 function incidentTitle(incident) {
   if (incident.kind === 'versheid') return t('not_fresh_incident', { chain: incident.chain });
-  if (incident.kind === 'alert') return (choice.lang === 'fr' && incident.title_fr) || incident.title;
+  if (incident.kind === 'alert') return incident[`title_${choice.lang}`] || incident.title;
   return t(`check_${incident.service.replace(/_be$/, '')}`);
 }
 
