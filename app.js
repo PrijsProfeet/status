@@ -26,11 +26,11 @@ const CLOCK_TICK_MS = 15_000;
 // page green through the very outage it should show.
 const STALE_AFTER_MINUTES = 20;
 
-// The storefronts, and the languages each one speaks. French joins België
-// with the French storefront (prijsprofeet#1568): add 'fr' here and a
-// STRINGS.fr table, and the language switch appears on its own.
+// The storefronts, and the languages each one speaks. België speaks Dutch and
+// French, like its storefront (prijsprofeet#1568); a language listed here needs
+// a STRINGS table, and the language switch appears on its own.
 const COUNTRIES = ['nl', 'be'];
-const LANGS = { nl: ['nl'], be: ['nl'] };
+const LANGS = { nl: ['nl'], be: ['nl', 'fr'] };
 const HOSTS = { nl: 'www.prijsprofeet.nl', be: 'www.prijsprofeet.be' };
 // Rows shown to visitors, in this order. The API rows sit in the business block.
 const VISITOR_CHECKS = ['website', 'mcp'];
@@ -150,6 +150,116 @@ const STRINGS = {
       'elke check mislukte. Een omlijnde balk valt vóór de start van die host. Storingen en mededelingen volgen? ' +
       'Abonneer je op de',
     footer_feed: 'Atom-feed',
+  },
+  fr: {
+    title: 'Statut de PrijsProfeet',
+    loading: 'Chargement du statut…',
+    choose_country: 'Choisissez votre pays',
+    choose_lang: 'Choisissez votre langue',
+    country_nl: 'Pays-Bas',
+    country_be: 'Belgique',
+    lang_nl: 'Nederlands',
+    lang_fr: 'Français',
+    updated: 'Mis à jour {ago}',
+    last_check: 'Dernière vérification : {when}',
+    load_failed: 'Impossible de charger les données de statut',
+    banner: { up: 'Tout fonctionne', degraded: 'Panne partielle', down: 'Panne', none: 'Aucune donnée' },
+    banner_stale: 'Données obsolètes : la dernière vérification date de {ago}',
+    status: { up: 'Opérationnel', degraded: 'Perturbé', down: 'Panne', none: 'Aucune donnée' },
+    no_recent_check: 'Aucune vérification récente',
+    checked: 'Vérifié {ago}',
+    check_website: 'Site web',
+    check_mcp: 'Dans Claude et ChatGPT',
+    check_api: 'API',
+    reason: {
+      ok: '200 OK',
+      cloudflare: 'accessible (Cloudflare bloque volontairement les vérifications automatiques ici)',
+      timeout: 'inaccessible : délai dépassé',
+      reset: 'inaccessible : connexion interrompue',
+      refused: 'inaccessible : connexion refusée',
+      incomplete: 'inaccessible : réponse incomplète',
+      dns: 'inaccessible : erreur DNS',
+      tls: 'inaccessible : erreur TLS',
+      unreachable: 'inaccessible',
+      mcp_invalid: 'pas de réponse valide du connecteur',
+      mcp_tools: 'il manque un outil au connecteur (search ou fetch)',
+      not_fresh: 'données de la nuit pas à jour à 07h00',
+      http: 'HTTP {status}',
+    },
+    ago: {
+      never: 'jamais',
+      unknown: 'inconnu',
+      now: 'à l’instant',
+      minutes: (n) => (n === 1 ? 'il y a 1 minute' : `il y a ${n} minutes`),
+      hours: (n) => (n === 1 ? 'il y a 1 heure' : `il y a ${n} heures`),
+      days: (n) => `il y a ${n} jours`,
+    },
+    duration: {
+      under_minute: 'moins d’une minute',
+      minutes: '{n} min',
+      hours: '{h} h',
+      hours_minutes: '{h} h {m} min',
+      days: (n) => (n === 1 ? '1 jour' : `${n} jours`),
+      days_hours: '{days} {h} h',
+    },
+    day_not_measured: 'Pas encore mesuré',
+    day_no_checks: 'Aucune vérification enregistrée',
+    day_all_ok: '{runs} vérifications, toutes réussies',
+    day_failed: '{failed} vérifications sur {runs} échouées',
+    day_no_incident: (n) => (n === 1 ? 'vérification isolée, pas d’incident' : 'vérifications isolées, pas d’incident'),
+    incidents_title: 'Incidents',
+    incidents_note:
+      'Ouvert après deux vérifications échouées d’affilée (~10 min), pour qu’un simple délai dépassé ne soit pas un « incident ». ' +
+      'Couvre ce que cette sonde voit elle-même, plus les pannes que notre propre surveillance signale publiquement.',
+    ongoing: 'En cours',
+    since: 'depuis {start}',
+    lasted: '{start}, a duré {duration}',
+    not_fresh_incident: '{chain} : pas à jour',
+    notice_meta: 'Publié {published}',
+    notice_until: ' · valable jusqu’au {until}',
+    freshness_title: 'Fraîcheur par chaîne',
+    freshness_note:
+      'Une chaîne est à jour si les données de la nuit sont là à 07h00 : les promotions actualisées et, quand la ' +
+      'chaîne les fournit, les prix en rayon et les codes-barres au niveau habituel. Enregistré chaque matin à ' +
+      '07h05, puis plus modifié. La norme est de 90 % de nuits à jour par chaîne et par mois civil.',
+    fresh_this_morning: 'Ce matin ({day})',
+    fresh_on: 'Le {day}',
+    fresh_lead: '{when} : {fresh} chaînes sur {total} à jour.',
+    fresh_not: ' Pas à jour : {names}.',
+    fresh_unmeasured: ' Pas encore de mesure : {names}.',
+    fresh_details: 'Par chaîne et par mois',
+    col_chain: 'Chaîne',
+    col_at_seven: 'À 07h00',
+    running: ' (en cours)',
+    not_measured: 'pas encore mesuré',
+    fresh: 'à jour',
+    not_fresh: 'pas à jour',
+    business_title: 'Pour les clients de l’API',
+    business_note:
+      'L’API et le SLA Business, pour les deux hôtes. Une clé fonctionne sur les deux ; l’hôte détermine le pays des données.',
+    sla_title: 'Disponibilité mensuelle (SLA Business)',
+    sla_note:
+      'C’est la mesure contractuelle : toutes les 30 secondes, une vérification de /api/v1/ready sur chaque hôte, ' +
+      'par la même route publique qu’un visiteur (Cloudflare et nginx). Les mises en production et la maintenance ' +
+      'comptent normalement ; rien n’est exclu. La norme de 99,5 % vaut par hôte utilisé et est mesurée par hôte, ' +
+      'jamais en moyenne. Voir les',
+    sla_terms: 'conditions de l’API (art. 10, en néerlandais)',
+    col_month: 'Mois',
+    col_availability: 'Disponibilité',
+    col_downtime: 'Indisponibilité',
+    col_target: 'Objectif : {pct} %',
+    downtime_none: 'aucune',
+    sla_running: 'en cours',
+    sla_met: 'atteint',
+    sla_missed: 'manqué',
+    measured_from: '{month} (mesuré à partir du {day})',
+    footer:
+      'Les vérifications ci-dessus tournent toutes les quelques minutes depuis GitHub Actions, en dehors du réseau ' +
+      'de PrijsProfeet, pour qu’une panne là-bas n’entraîne pas cette page. Chaque barre est un jour (heure ' +
+      'néerlandaise et belge) sur les 31 derniers jours : vert, tout a réussi ; orange, un jour avec un incident ; ' +
+      'rouge, un jour où chaque vérification a échoué. Une barre en contour précède le lancement de cet hôte. ' +
+      'Suivre les pannes et les annonces ? Abonnez-vous au',
+    footer_feed: 'flux Atom (en néerlandais)',
   },
 };
 
@@ -782,10 +892,10 @@ function incidentsOf(data, country) {
 
 // What the page calls an incident, in the visitor's language. The stored
 // `name` is the feed's Dutch and is not read here. An alert carries the app's
-// own Dutch title until the app publishes a French one (prijsprofeet#1568).
+// own titles: French when the app sent one (prijsprofeet#1568), else Dutch.
 function incidentTitle(incident) {
   if (incident.kind === 'versheid') return t('not_fresh_incident', { chain: incident.chain });
-  if (incident.kind === 'alert') return incident.title;
+  if (incident.kind === 'alert') return (choice.lang === 'fr' && incident.title_fr) || incident.title;
   return t(`check_${incident.service.replace(/_be$/, '')}`);
 }
 
