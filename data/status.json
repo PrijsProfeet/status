@@ -455,7 +455,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-17T06:40:27.742591+00:00",
+  "generated_at": "2026-10-17T06:45:26.495825+00:00",
   "incidents": [
     {
       "chain": "Albert Heijn",
@@ -482,9 +482,8 @@
   "services": {
     "api": {
       "check": "api",
-      "consecutive_failures": 1,
+      "consecutive_failures": 0,
       "country": "nl",
-      "failing_since": "2026-10-17T06:40:38.967032+00:00",
       "history": [
         {
           "date": "2026-09-11",
@@ -718,13 +717,13 @@
             "reason": "http_403",
             "time": "2026-10-17T06:40:38.967032+00:00"
           },
-          "runs": 108
+          "runs": 109
         }
       ],
-      "last_checked": "2026-10-17T06:40:38.967032+00:00",
+      "last_checked": "2026-10-17T06:45:27.445533+00:00",
       "name": "API",
-      "reason": "http_403",
-      "status": "down",
+      "reason": "ok",
+      "status": "up",
       "target": "https://www.prijsprofeet.nl/api/v1/ready"
     },
     "api_be": {
@@ -862,10 +861,10 @@
           "date": "2026-10-17",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 108
+          "runs": 109
         }
       ],
-      "last_checked": "2026-10-17T06:40:45.556287+00:00",
+      "last_checked": "2026-10-17T06:45:29.091418+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -886,10 +885,10 @@
           "date": "2026-10-17",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 108
+          "runs": 109
         }
       ],
-      "last_checked": "2026-10-17T06:40:44.594541+00:00",
+      "last_checked": "2026-10-17T06:45:27.852310+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -910,10 +909,10 @@
           "date": "2026-10-17",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 108
+          "runs": 109
         }
       ],
-      "last_checked": "2026-10-17T06:40:45.724248+00:00",
+      "last_checked": "2026-10-17T06:45:29.630283+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -921,9 +920,8 @@
     },
     "website": {
       "check": "website",
-      "consecutive_failures": 1,
+      "consecutive_failures": 0,
       "country": "nl",
-      "failing_since": "2026-10-17T06:40:33.384311+00:00",
       "history": [
         {
           "date": "2026-09-11",
@@ -1157,13 +1155,13 @@
             "reason": "http_403",
             "time": "2026-10-17T06:40:33.384311+00:00"
           },
-          "runs": 108
+          "runs": 109
         }
       ],
-      "last_checked": "2026-10-17T06:40:33.384311+00:00",
+      "last_checked": "2026-10-17T06:45:27.039262+00:00",
       "name": "Website",
-      "reason": "http_403",
-      "status": "down",
+      "reason": "ok",
+      "status": "up",
       "target": "https://www.prijsprofeet.nl/"
     },
     "website_be": {
@@ -1307,10 +1305,10 @@
           "date": "2026-10-17",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 108
+          "runs": 109
         }
       ],
-      "last_checked": "2026-10-17T06:40:45.388635+00:00",
+      "last_checked": "2026-10-17T06:45:28.581092+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
