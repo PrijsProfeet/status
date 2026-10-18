@@ -55,6 +55,9 @@ monitors answers "up" from inside the very outage it should report.
   the page renders as before. Visits during an outage are therefore not
   counted.
 - Served by GitHub Pages at `status.prijsprofeet.nl`.
+  Pages caches `app.js` and `styles.css` for ten minutes, so `index.html`
+  names each with a hash of its content (`app.js?v=…`); change either file
+  and `TestCacheVersions` names the new value to put there.
 
 ### Why the MCP check never calls a tool
 

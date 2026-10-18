@@ -793,3 +793,20 @@ class TestMcpCheck(unittest.TestCase):
     def test_unreachable_is_a_code(self):
         self._answer(None, b"", "timed out")
         self.assertEqual(probe.check_mcp("https://h").reason, "timeout")
+
+
+class TestCacheVersions(unittest.TestCase):
+    """GitHub Pages serves app.js and styles.css with max-age=600, so a browser
+    can pair a new index.html with an old app.js (seen 2026-10-18: the English
+    feed link did not show). index.html names each file with a hash of its
+    content; change the file, and this test names the new value."""
+
+    def test_index_names_the_current_version_of_each_file(self):
+        import hashlib
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parent.parent
+        index = (root / "index.html").read_text()
+        for name in ("app.js", "styles.css"):
+            digest = hashlib.sha256((root / name).read_bytes()).hexdigest()[:10]
+            self.assertIn(f"{name}?v={digest}", index, f"zet in index.html {name}?v={digest}")
