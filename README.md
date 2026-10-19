@@ -81,8 +81,10 @@ on a new entry, not on an updated one), plus every notice. The feed only
 changes when an entry does, never on the clock. The same feed in English, for
 API customers (prijsprofeet#1670), is `data/incidents.en.xml`: the same entry
 ids, English sentences (`FEED_TEXT`, `REASON_TEXT_EN`) and English names built
-from the stored codes, never from the Dutch `name`. The page links it when it
-speaks English. A notice may carry `title_en` and `body_en` (both or neither);
+from the stored codes, never from the Dutch `name`. The page links it in every language but
+Dutch: French and German readers get the English feed rather than a Dutch one.
+There is no French or German feed on purpose: its readers are API customers,
+and the API speaks Dutch and English. A notice may carry `title_en` and `body_en` (both or neither);
 without them the English page and feed show the Dutch text.
 
 A chain that is not fresh at 07:00 (`/api/v1/freshness/summary` on each host)
