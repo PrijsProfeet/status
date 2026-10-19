@@ -6,7 +6,8 @@
  * Two audiences on one page. A visitor picks a storefront (Nederland,
  * België) and sees only that one: its website, the connector in Claude and
  * ChatGPT, the freshness of its chains and its incidents. API customers get a
- * fixed block below with both hosts and the Business SLA, outside that choice.
+ * block below with the API and Business SLA of that storefront's host, and a
+ * link to the other hosts.
  */
 
 const WINDOW_DAYS = 31;
@@ -27,15 +28,19 @@ const CLOCK_TICK_MS = 15_000;
 const STALE_AFTER_MINUTES = 20;
 
 // The storefronts, and the languages each one speaks. België speaks Dutch and
-// French, like its storefront (prijsprofeet#1568); English is there for API
+// French, like its storefront (prijsprofeet#1568), and German (prijsprofeet#1697); English is there for API
 // customers on both (prijsprofeet#1670). A language listed here needs a STRINGS
 // table, and the language switch appears on its own.
 const COUNTRIES = ['nl', 'be'];
-const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'en'] };
+const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'de', 'en'] };
 // Never picked from the browser: plenty of Dutch and Belgian visitors run an
 // English browser and read the consumer site in Dutch. English comes from the
 // switch or from a link (?taal=en, which the English API pages use).
 const NOT_FROM_BROWSER = ['en'];
+// An alert carries a Dutch, French and English title (prijsprofeet alerts.yml).
+// German pages fall back to French, like the German storefront reads the French
+// product names: in East Belgium French is read before Dutch (prijsprofeet#1697).
+const TITLE_FALLBACK = { de: 'fr' };
 const HOSTS = { nl: 'www.prijsprofeet.nl', be: 'www.prijsprofeet.be' };
 // Rows shown to visitors, in this order. The API rows sit in the business block.
 const VISITOR_CHECKS = ['website', 'mcp'];
@@ -55,6 +60,7 @@ const STRINGS = {
     country_be: 'België',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
+    lang_de: 'Deutsch',
     lang_en: 'English',
     updated: 'Bijgewerkt {ago}',
     last_check: 'Laatste check: {when}',
@@ -132,7 +138,8 @@ const STRINGS = {
     not_fresh: 'niet vers',
     business_title: 'Voor API-klanten',
     business_note:
-      'De API en de Business SLA, voor beide hosts. Eén key werkt op beide; de host bepaalt het land van de data.',
+      'De API en de Business SLA van dit land. Eén key werkt op elke host; de host bepaalt het land van de data.',
+    other_country: 'Gebruik je de API van een ander land? Kies dat land bovenaan de pagina.',
     sla_title: 'Maandelijkse beschikbaarheid (Business SLA)',
     sla_note:
       'Dit is de contractuele meting: elke 30 seconden een check op /api/v1/ready van elke host, via dezelfde ' +
@@ -166,6 +173,7 @@ const STRINGS = {
     country_be: 'Belgique',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
+    lang_de: 'Deutsch',
     lang_en: 'English',
     updated: 'Mis à jour {ago}',
     last_check: 'Dernière vérification : {when}',
@@ -243,7 +251,8 @@ const STRINGS = {
     not_fresh: 'pas à jour',
     business_title: 'Pour les clients de l’API',
     business_note:
-      'L’API et le SLA Business, pour les deux hôtes. Une clé fonctionne sur les deux ; l’hôte détermine le pays des données.',
+      'L’API et le SLA Business de ce pays. Une clé fonctionne sur chaque hôte ; l’hôte détermine le pays des données.',
+    other_country: 'Vous utilisez l’API d’un autre pays ? Choisissez ce pays en haut de la page.',
     sla_title: 'Disponibilité mensuelle (SLA Business)',
     sla_note:
       'C’est la mesure contractuelle : toutes les 30 secondes, une vérification de /api/v1/ready sur chaque hôte, ' +
@@ -268,6 +277,120 @@ const STRINGS = {
       'Suivre les pannes et les annonces ? Abonnez-vous au',
     footer_feed: 'flux Atom (en néerlandais)',
   },
+  de: {
+    title: 'PrijsProfeet Status',
+    loading: 'Status wird geladen…',
+    choose_country: 'Wählen Sie Ihr Land',
+    choose_lang: 'Wählen Sie Ihre Sprache',
+    country_nl: 'Niederlande',
+    country_be: 'Belgien',
+    lang_nl: 'Nederlands',
+    lang_fr: 'Français',
+    lang_de: 'Deutsch',
+    lang_en: 'English',
+    updated: 'Aktualisiert {ago}',
+    last_check: 'Letzte Prüfung: {when}',
+    load_failed: 'Statusdaten konnten nicht geladen werden',
+    banner: { up: 'Alles funktioniert', degraded: 'Teilweise Störung', down: 'Störung', none: 'Keine Daten' },
+    banner_stale: 'Veraltete Daten: die letzte Prüfung war {ago}',
+    status: { up: 'In Ordnung', degraded: 'Beeinträchtigt', down: 'Störung', none: 'Keine Daten' },
+    no_recent_check: 'Keine aktuelle Prüfung',
+    checked: 'Geprüft {ago}',
+    check_website: 'Website',
+    check_mcp: 'In Claude und ChatGPT',
+    check_api: 'API',
+    reason: {
+      ok: '200 OK',
+      cloudflare: 'erreichbar (Cloudflare blockiert automatische Prüfungen hier absichtlich)',
+      timeout: 'nicht erreichbar: Zeitüberschreitung',
+      reset: 'nicht erreichbar: Verbindung abgebrochen',
+      refused: 'nicht erreichbar: Verbindung abgelehnt',
+      incomplete: 'nicht erreichbar: unvollständige Antwort',
+      dns: 'nicht erreichbar: DNS-Fehler',
+      tls: 'nicht erreichbar: TLS-Fehler',
+      unreachable: 'nicht erreichbar',
+      mcp_invalid: 'keine gültige Antwort vom Connector',
+      mcp_tools: 'dem Connector fehlt ein Tool (search oder fetch)',
+      not_fresh: 'Daten der Nacht um 07:00 Uhr nicht aktuell',
+      http: 'HTTP {status}',
+    },
+    ago: {
+      never: 'nie',
+      unknown: 'unbekannt',
+      now: 'gerade eben',
+      minutes: (n) => (n === 1 ? 'vor 1 Minute' : `vor ${n} Minuten`),
+      hours: (n) => (n === 1 ? 'vor 1 Stunde' : `vor ${n} Stunden`),
+      days: (n) => `vor ${n} Tagen`,
+    },
+    duration: {
+      under_minute: 'weniger als eine Minute',
+      minutes: '{n} Min.',
+      hours: '{h} Std.',
+      hours_minutes: '{h} Std. {m} Min.',
+      days: (n) => (n === 1 ? '1 Tag' : `${n} Tage`),
+      days_hours: '{days} {h} Std.',
+    },
+    day_not_measured: 'Noch nicht gemessen',
+    day_no_checks: 'Keine Prüfungen erfasst',
+    day_all_ok: '{runs} Prüfungen, alle erfolgreich',
+    day_failed: '{failed} von {runs} Prüfungen fehlgeschlagen',
+    day_no_incident: (n) => (n === 1 ? 'einzelne Prüfung, kein Vorfall' : 'einzelne Prüfungen, kein Vorfall'),
+    incidents_title: 'Vorfälle',
+    incidents_note:
+      'Eröffnet nach zwei fehlgeschlagenen Prüfungen in Folge (~10 Min.), damit eine einzelne Zeitüberschreitung ' +
+      'kein „Vorfall“ ist. Umfasst, was diese Prüfung selbst sieht, sowie die Störungen, die unsere eigene ' +
+      'Überwachung öffentlich meldet.',
+    ongoing: 'Läuft',
+    since: 'seit {start}',
+    lasted: '{start}, Dauer {duration}',
+    not_fresh_incident: '{chain}: nicht aktuell',
+    notice_meta: 'Veröffentlicht {published}',
+    notice_until: ' · gültig bis {until}',
+    freshness_title: 'Aktualität pro Kette',
+    freshness_note:
+      'Eine Kette ist aktuell, wenn die Daten der Nacht um 07:00 Uhr da sind: die Angebote erneuert und, wo die ' +
+      'Kette sie liefert, die Regalpreise und Barcodes auf dem üblichen Stand. Jeden Morgen um 07:05 Uhr ' +
+      'festgehalten und danach nicht mehr geändert. Die Norm sind 90 % aktuelle Nächte pro Kette und Kalendermonat.',
+    fresh_this_morning: 'Heute Morgen ({day})',
+    fresh_on: 'Am {day}',
+    fresh_lead: '{when}: {fresh} von {total} Ketten aktuell.',
+    fresh_not: ' Nicht aktuell: {names}.',
+    fresh_unmeasured: ' Noch keine Messung: {names}.',
+    fresh_details: 'Pro Kette und pro Monat',
+    col_chain: 'Kette',
+    col_at_seven: 'Um 07:00',
+    running: ' (läuft noch)',
+    not_measured: 'noch nicht gemessen',
+    fresh: 'aktuell',
+    not_fresh: 'nicht aktuell',
+    business_title: 'Für API-Kunden',
+    business_note:
+      'Die API und das Business-SLA dieses Landes. Ein Key funktioniert auf jedem Host; der Host bestimmt das Land der Daten.',
+    other_country: 'Sie nutzen die API eines anderen Landes? Wählen Sie dieses Land oben auf der Seite.',
+    sla_title: 'Monatliche Verfügbarkeit (Business-SLA)',
+    sla_note:
+      'Dies ist die vertragliche Messung: alle 30 Sekunden eine Prüfung von /api/v1/ready auf jedem Host, über ' +
+      'denselben öffentlichen Weg wie ein Besucher (Cloudflare und nginx). Releases und Wartung zählen normal mit; ' +
+      'nichts wird ausgeschlossen. Die Norm von 99,5 % gilt pro genutztem Host und wird pro Host gemessen, nie als ' +
+      'Durchschnitt. Siehe die',
+    sla_terms: 'API-Bedingungen (Art. 10, auf Niederländisch)',
+    col_month: 'Monat',
+    col_availability: 'Verfügbarkeit',
+    col_downtime: 'Ausfall',
+    col_target: 'Ziel: {pct} %',
+    downtime_none: 'keiner',
+    sla_running: 'läuft noch',
+    sla_met: 'erreicht',
+    sla_missed: 'verfehlt',
+    measured_from: '{month} (gemessen ab {day})',
+    footer:
+      'Die Prüfungen oben laufen alle paar Minuten über GitHub Actions, außerhalb des Netzwerks von PrijsProfeet, ' +
+      'damit eine Störung dort diese Seite nicht mitreißt. Jeder Balken ist ein Tag (niederländische und belgische ' +
+      'Zeit) über die letzten 31 Tage: grün heißt alles erfolgreich, orange ein Tag mit einem Vorfall, rot ein Tag, ' +
+      'an dem jede Prüfung fehlschlug. Ein umrandeter Balken liegt vor dem Start dieses Hosts. Störungen und ' +
+      'Mitteilungen verfolgen? Abonnieren Sie den',
+    footer_feed: 'Atom-Feed (auf Niederländisch)',
+  },
   en: {
     title: 'PrijsProfeet status',
     loading: 'Loading status…',
@@ -277,6 +400,7 @@ const STRINGS = {
     country_be: 'Belgium',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
+    lang_de: 'Deutsch',
     lang_en: 'English',
     updated: 'Updated {ago}',
     last_check: 'Last check: {when}',
@@ -354,7 +478,8 @@ const STRINGS = {
     not_fresh: 'not fresh',
     business_title: 'For API customers',
     business_note:
-      'The API and the Business SLA, for both hosts. One key works on both; the host decides the country of the data.',
+      'The API and the Business SLA for this country. One key works on every host; the host decides the country of the data.',
+    other_country: 'Using the API of another country? Pick that country at the top of the page.',
     sla_title: 'Monthly availability (Business SLA)',
     sla_note:
       'This is the contractual measurement: every 30 seconds a check of /api/v1/ready on each host, through the same ' +
@@ -742,10 +867,12 @@ function renderVisitorRows(data) {
   main.replaceChildren(...(rows.length ? [panel] : []));
 }
 
-// One API row per host, named by its host: an API customer thinks in hosts.
+// The API row of the chosen storefront only, named by its host: an API
+// customer thinks in hosts, and most use one. The country switch at the top
+// reaches the others, so the block does not grow with every country.
 function renderApiRows(data) {
   const panel = document.getElementById('api-rows');
-  const rows = COUNTRIES.flatMap((c) => servicesOf(data.services, c).filter(([, s]) => s.check === 'api'));
+  const rows = servicesOf(data.services, choice.country).filter(([, s]) => s.check === 'api');
   panel.replaceChildren(
     ...rows.map(([key, service]) =>
       renderService(key, service, data.incidents, `${t('check_api')} · ${HOSTS[service.country].replace(/^www\./, '')}`),
@@ -757,8 +884,7 @@ function renderApiRows(data) {
 /* ---------- Business SLA ---------- */
 
 // The Business SLA is owed per host and scored per host (#1242): one table
-// each, never an average. .nl first; its history is the longest.
-const SLA_HOSTS = COUNTRIES.map((c) => HOSTS[c]);
+// for the chosen storefront's host, never an average.
 
 // Verbatim digits, only the decimal separator follows the locale: rounding
 // 99,9665 would make a figure the API states look more (or less) exact than it is.
@@ -825,18 +951,13 @@ function slaMonthLabel(m) {
   return t('measured_from', { month: label, day });
 }
 
-function sortedHosts(byHost) {
-  return Object.keys(byHost).sort((a, b) => (SLA_HOSTS.indexOf(a) + 1 || 99) - (SLA_HOSTS.indexOf(b) + 1 || 99));
-}
-
 function renderSla(slaByHost) {
   const section = document.getElementById('sla');
   const container = document.getElementById('sla-tables');
   container.innerHTML = '';
-  const byHost = slaByHost || {};
-  for (const host of sortedHosts(byHost)) {
-    const table = renderSlaTable(byHost[host]);
-    if (!table) continue;
+  const host = HOSTS[choice.country];
+  const table = renderSlaTable((slaByHost || {})[host] || {});
+  if (table) {
     container.appendChild(el('h4', 'sla-host', host.replace(/^www\./, '')));
     container.appendChild(scrollable(table));
   }
@@ -1018,7 +1139,10 @@ function incidentsOf(data, country) {
 // own titles: French when the app sent one (prijsprofeet#1568), else Dutch.
 function incidentTitle(incident) {
   if (incident.kind === 'versheid') return t('not_fresh_incident', { chain: incident.chain });
-  if (incident.kind === 'alert') return incident[`title_${choice.lang}`] || incident.title;
+  if (incident.kind === 'alert') {
+    const fallback = TITLE_FALLBACK[choice.lang];
+    return incident[`title_${choice.lang}`] || (fallback && incident[`title_${fallback}`]) || incident.title;
+  }
   return t(`check_${incident.service.replace(/_be$/, '')}`);
 }
 

@@ -27,23 +27,26 @@ monitors answers "up" from inside the very outage it should report.
   effort — GitHub can delay a scheduled run under load) and commits the
   updated JSON straight to `main`.
 - The page has two audiences. A visitor picks a storefront (`?land=nl` /
-  `?land=be`, remembered in localStorage, `nl-BE`/`fr-BE` browsers start on
+  `?land=be`, remembered in localStorage, `nl-BE`/`fr-BE`/`de-BE` browsers start on
   België) and sees only that one: website, the connector in Claude and
   ChatGPT, the freshness of its chains, its incidents, and a banner for that
-  storefront alone. API customers get a fixed block below with the API row of
-  each host and the Business SLA per host, outside the country choice.
+  storefront alone. API customers get a block below with the API row and the
+  Business SLA of that storefront's host; the country switch reaches the others: most
+  customers use one host, and the list would grow with every country.
 - `status.json` stores **codes, never sentences** (`country`, `check`,
   `reason` such as `timeout` or `http_503`), so the page can render them in
   the visitor's language. Every sentence on the page lives in `STRINGS` in
-  `app.js`; België speaks Dutch and French (prijsprofeet#1568): `STRINGS.fr`
-  plus `'fr'` in `LANGS.be`, and the language switch shows (`?taal=fr`). Both
+  `app.js`; België speaks Dutch, French (prijsprofeet#1568) and German
+  (prijsprofeet#1697): `STRINGS.fr`/`STRINGS.de` plus their code in
+  `LANGS.be`, and the language switch shows (`?taal=fr`, `?taal=de`). Both
   countries also speak English, for API customers (prijsprofeet#1670):
   `STRINGS.en`, chosen by the switch or `?taal=en` (the English API pages and
   mails link that way) and never from the browser, because many Dutch and
   Belgian visitors run an English browser. An alert carries the app's Dutch
   `title`, French `title_fr` and English `title_en` (`public_title_fr` and
   `public_title_en` in its alerts.yml); without one, that language shows the
-  Dutch title.
+  Dutch title. German has no alert title of its own and shows the French one
+  (`TITLE_FALLBACK`), as the German storefront reads the French product names.
   The Atom feed is Dutch and
   renders the same codes through `REASON_TEXT` in `probe.py`; a test holds
   both tables to the codes the checks write.
