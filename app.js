@@ -275,7 +275,7 @@ const STRINGS = {
       'néerlandaise et belge) sur les 31 derniers jours : vert, tout a réussi ; orange, un jour avec un incident ; ' +
       'rouge, un jour où chaque vérification a échoué. Une barre en contour précède le lancement de cet hôte. ' +
       'Suivre les pannes et les annonces ? Abonnez-vous au',
-    footer_feed: 'flux Atom (en néerlandais)',
+    footer_feed: 'flux Atom (en anglais)',
   },
   de: {
     title: 'PrijsProfeet Status',
@@ -389,7 +389,7 @@ const STRINGS = {
       'Zeit) über die letzten 31 Tage: grün heißt alles erfolgreich, orange ein Tag mit einem Vorfall, rot ein Tag, ' +
       'an dem jede Prüfung fehlschlug. Ein umrandeter Balken liegt vor dem Start dieses Hosts. Störungen und ' +
       'Mitteilungen verfolgen? Abonnieren Sie den',
-    footer_feed: 'Atom-Feed (auf Niederländisch)',
+    footer_feed: 'Atom-Feed (auf Englisch)',
   },
   en: {
     title: 'PrijsProfeet status',
@@ -583,10 +583,12 @@ function applyStaticText() {
   document.querySelectorAll('[data-t]').forEach((node) => {
     node.textContent = t(node.dataset.t);
   });
-  // The feed exists in Dutch and English (probe.py, FEED_TEXT); French readers
-  // get the Dutch one, which their footer text says.
+  // The feed exists in Dutch and English only (probe.py, FEED_TEXT): its
+  // readers are API customers, and the API speaks those two. French and German
+  // readers get the English one, more likely read than Dutch; their footer
+  // text says so.
   document.getElementById('feed-link').href =
-    choice.lang === 'en' ? 'data/incidents.en.xml' : 'data/incidents.xml';
+    choice.lang === 'nl' ? 'data/incidents.xml' : 'data/incidents.en.xml';
 }
 
 function renderSwitches() {
