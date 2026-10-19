@@ -6,7 +6,7 @@
 <title>PrijsProfeet status</title>
 <meta name="description" content="Actuele beschikbaarheid van prijsprofeet.nl en prijsprofeet.be (website, API en MCP-connector), gemeten van buiten de eigen infrastructuur.">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="styles.css?v=02d0506f3a">
+<link rel="stylesheet" href="styles.css?v=d55f875803">
 <link rel="alternate" type="application/atom+xml" title="Storingen en mededelingen" href="data/incidents.xml" hreflang="nl">
 <link rel="alternate" type="application/atom+xml" title="Outages and notices" href="data/incidents.en.xml" hreflang="en">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='%232e9e5b'/></svg>">
@@ -50,8 +50,9 @@
     <ul id="incidents-list"></ul>
   </section>
 
-  <!-- For API customers: both hosts side by side, outside the country choice.
-       The API is one product under one contract (prijsprofeet#1131). -->
+  <!-- For API customers: the API and SLA of the chosen storefront's host, with
+       a pointer to the country switch. One key works on every host (prijsprofeet#1131),
+       but most customers use one, and the list grows with every country. -->
   <section class="business" id="business">
     <h2 data-t="business_title"></h2>
     <p class="sla-note" data-t="business_note"></p>
@@ -63,6 +64,7 @@
         <a href="https://www.prijsprofeet.nl/api-voorwaarden" rel="noopener" data-t="sla_terms"></a></p>
       <div id="sla-tables"></div>
     </div>
+    <p class="sla-note other-hosts" data-t="other_country"></p>
   </section>
 
   <footer>
@@ -72,7 +74,7 @@
   </footer>
 
 </div>
-<script src="app.js?v=566a9297ad"></script>
+<script src="app.js?v=69bf22ea65"></script>
 <!-- Umami (own site id). async, so a box that is down cannot hold up the page:
      the tracker then simply does not load. -->
 <script async src="https://www.prijsprofeet.nl/pp-metrics.js" data-website-id="51323e37-aae3-47df-952c-aa9b8076408e" data-host-url="https://www.prijsprofeet.nl"></script>
