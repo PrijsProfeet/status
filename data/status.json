@@ -385,6 +385,12 @@
           "retailer": "dagwinkel"
         },
         {
+          "latest": null,
+          "months": [],
+          "name": "Amazing Oriental",
+          "retailer": "amazing_oriental"
+        },
+        {
           "latest": {
             "day": "2026-10-20",
             "fresh": true
@@ -455,7 +461,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-20T19:25:24.591753+00:00",
+  "generated_at": "2026-10-20T19:30:41.249567+00:00",
   "incidents": [
     {
       "chain": "Poiesz",
@@ -755,10 +761,10 @@
           "date": "2026-10-20",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 262
+          "runs": 263
         }
       ],
-      "last_checked": "2026-10-20T19:25:25.707398+00:00",
+      "last_checked": "2026-10-20T19:30:42.716104+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -917,10 +923,10 @@
           "date": "2026-10-20",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 262
+          "runs": 263
         }
       ],
-      "last_checked": "2026-10-20T19:25:27.041812+00:00",
+      "last_checked": "2026-10-20T19:30:44.769661+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -959,10 +965,10 @@
           "date": "2026-10-20",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 262
+          "runs": 263
         }
       ],
-      "last_checked": "2026-10-20T19:25:26.157054+00:00",
+      "last_checked": "2026-10-20T19:30:43.321536+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1001,10 +1007,10 @@
           "date": "2026-10-20",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 262
+          "runs": 263
         }
       ],
-      "last_checked": "2026-10-20T19:25:27.224702+00:00",
+      "last_checked": "2026-10-20T19:30:45.384592+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1265,10 +1271,10 @@
           "date": "2026-10-20",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 262
+          "runs": 263
         }
       ],
-      "last_checked": "2026-10-20T19:25:25.267401+00:00",
+      "last_checked": "2026-10-20T19:30:42.098745+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1433,10 +1439,10 @@
           "date": "2026-10-20",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 262
+          "runs": 263
         }
       ],
-      "last_checked": "2026-10-20T19:25:26.621494+00:00",
+      "last_checked": "2026-10-20T19:30:44.161121+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1448,22 +1454,22 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.9996857596759833,
+          "availability": 0.9996858693565557,
           "availability_pct": 99.9686,
           "closed": false,
           "downtime_minutes": 9.0,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-20T19:20:37.258004+00:00",
+          "measured_to": "2026-10-20T19:30:47.792938+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 12,
-            "expected": 57281,
-            "good": 57264,
+            "expected": 57301,
+            "good": 57284,
             "missing": 6
           },
           "step_seconds": 30,
@@ -1578,22 +1584,22 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.999650844084426,
+          "availability": 0.9996509659517286,
           "availability_pct": 99.9651,
           "closed": false,
           "downtime_minutes": 10.0,
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-20T19:20:35.440916+00:00",
+          "measured_to": "2026-10-20T19:30:45.885590+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 13,
-            "expected": 57281,
-            "good": 57261,
+            "expected": 57301,
+            "good": 57281,
             "missing": 7
           },
           "step_seconds": 30,
