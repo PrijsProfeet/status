@@ -472,7 +472,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-25T23:05:22.048286+00:00",
+  "generated_at": "2026-10-25T23:10:28.973815+00:00",
   "incidents": [
     {
       "chain": "Albert Heijn",
@@ -828,10 +828,10 @@
           "date": "2026-10-26",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 2
+          "runs": 3
         }
       ],
-      "last_checked": "2026-10-25T23:05:22.782254+00:00",
+      "last_checked": "2026-10-25T23:10:29.922787+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1026,10 +1026,10 @@
           "date": "2026-10-26",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 2
+          "runs": 3
         }
       ],
-      "last_checked": "2026-10-25T23:05:23.495674+00:00",
+      "last_checked": "2026-10-25T23:10:31.131719+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1104,10 +1104,10 @@
           "date": "2026-10-26",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 2
+          "runs": 3
         }
       ],
-      "last_checked": "2026-10-25T23:05:22.955621+00:00",
+      "last_checked": "2026-10-25T23:10:30.091606+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1182,10 +1182,10 @@
           "date": "2026-10-26",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 2
+          "runs": 3
         }
       ],
-      "last_checked": "2026-10-25T23:05:23.654888+00:00",
+      "last_checked": "2026-10-25T23:10:31.297247+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1482,10 +1482,10 @@
           "date": "2026-10-26",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 2
+          "runs": 3
         }
       ],
-      "last_checked": "2026-10-25T23:05:22.604727+00:00",
+      "last_checked": "2026-10-25T23:10:29.499072+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1689,10 +1689,10 @@
           "date": "2026-10-26",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 2
+          "runs": 3
         }
       ],
-      "last_checked": "2026-10-25T23:05:23.330543+00:00",
+      "last_checked": "2026-10-25T23:10:30.713498+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1704,22 +1704,22 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.9996533603250094,
+          "availability": 0.999653456425611,
           "availability_pct": 99.9653,
           "closed": false,
           "downtime_minutes": 12.5,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-25T23:00:55.059217+00:00",
+          "measured_to": "2026-10-25T23:10:32.657929+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 19,
-            "expected": 72121,
-            "good": 72098,
+            "expected": 72141,
+            "good": 72117,
             "missing": 6
           },
           "step_seconds": 30,
@@ -1834,22 +1834,22 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.9997226882600075,
+          "availability": 0.9997227651404887,
           "availability_pct": 99.9723,
           "closed": false,
           "downtime_minutes": 10.0,
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-25T23:00:53.526206+00:00",
+          "measured_to": "2026-10-25T23:10:31.417860+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 13,
-            "expected": 72121,
-            "good": 72101,
+            "expected": 72141,
+            "good": 72121,
             "missing": 7
           },
           "step_seconds": 30,
