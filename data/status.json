@@ -125,6 +125,11 @@
         }
       ]
     },
+    "www.prijsprofeet.de": {
+      "fresh_by": "07:00",
+      "norm": 0.9,
+      "retailers": []
+    },
     "www.prijsprofeet.nl": {
       "fresh_by": "07:00",
       "norm": 0.9,
@@ -472,7 +477,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-28T16:25:23.507922+00:00",
+  "generated_at": "2026-10-28T16:27:14.296509+00:00",
   "incidents": [
     {
       "chain": "Amazing Oriental",
@@ -878,10 +883,10 @@
           "date": "2026-10-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 213
+          "runs": 214
         }
       ],
-      "last_checked": "2026-10-28T16:25:24.834727+00:00",
+      "last_checked": "2026-10-28T16:27:15.792730+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1088,14 +1093,32 @@
           "date": "2026-10-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 213
+          "runs": 214
         }
       ],
-      "last_checked": "2026-10-28T16:25:26.449900+00:00",
+      "last_checked": "2026-10-28T16:27:18.079784+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.be/api/v1/ready"
+    },
+    "api_de": {
+      "check": "api",
+      "consecutive_failures": 0,
+      "country": "de",
+      "history": [
+        {
+          "date": "2026-10-28",
+          "failed_runs": 0,
+          "first_failure": null,
+          "runs": 1
+        }
+      ],
+      "last_checked": "2026-10-28T16:27:20.386693+00:00",
+      "name": "API",
+      "reason": "ok",
+      "status": "up",
+      "target": "https://www.prijsprofeet.de/api/v1/ready"
     },
     "mcp": {
       "check": "mcp",
@@ -1178,10 +1201,10 @@
           "date": "2026-10-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 213
+          "runs": 214
         }
       ],
-      "last_checked": "2026-10-28T16:25:25.328720+00:00",
+      "last_checked": "2026-10-28T16:27:16.403824+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1268,10 +1291,10 @@
           "date": "2026-10-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 213
+          "runs": 214
         }
       ],
-      "last_checked": "2026-10-28T16:25:27.474567+00:00",
+      "last_checked": "2026-10-28T16:27:18.724685+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1568,10 +1591,10 @@
           "date": "2026-10-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 213
+          "runs": 214
         }
       ],
-      "last_checked": "2026-10-28T16:25:24.206073+00:00",
+      "last_checked": "2026-10-28T16:27:15.154902+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1787,14 +1810,32 @@
           "date": "2026-10-28",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 213
+          "runs": 214
         }
       ],
-      "last_checked": "2026-10-28T16:25:26.001097+00:00",
+      "last_checked": "2026-10-28T16:27:17.435842+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
       "target": "https://www.prijsprofeet.be/"
+    },
+    "website_de": {
+      "check": "website",
+      "consecutive_failures": 0,
+      "country": "de",
+      "history": [
+        {
+          "date": "2026-10-28",
+          "failed_runs": 0,
+          "first_failure": null,
+          "runs": 1
+        }
+      ],
+      "last_checked": "2026-10-28T16:27:19.715344+00:00",
+      "name": "Website",
+      "reason": "ok",
+      "status": "up",
+      "target": "https://www.prijsprofeet.de/"
     }
   },
   "sla": {
