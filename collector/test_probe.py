@@ -336,6 +336,20 @@ class TestBothStorefronts(unittest.TestCase):
         suffixes = [suffix for _country, _url, suffix in SITES]
         self.assertEqual(len(suffixes), len(set(suffixes)))
         self.assertIn("https://www.prijsprofeet.be", [url for _g, url, _s in SITES])
+        self.assertIn("https://www.prijsprofeet.de", [url for _g, url, _s in SITES])
+
+    def test_de_has_no_mcp_row_because_its_storefront_has_no_connector(self):
+        from probe import NO_MCP
+
+        self.assertEqual(NO_MCP, {"de"})
+        self.assertIn("de", [country for country, _url, _s in SITES])
+
+    def test_the_check_name_of_a_german_key_loses_its_country_suffix(self):
+        from probe import _HOST_SUFFIX
+
+        self.assertEqual(_HOST_SUFFIX.sub("", "api_de"), "api")
+        self.assertEqual(_HOST_SUFFIX.sub("", "website_be"), "website")
+        self.assertEqual(_HOST_SUFFIX.sub("", "api"), "api")
 
 
     def test_an_incident_names_the_country_it_happened_in(self):
