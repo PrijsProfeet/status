@@ -31,8 +31,8 @@ const STALE_AFTER_MINUTES = 20;
 // French, like its storefront (prijsprofeet#1568), and German (prijsprofeet#1697); English is there for API
 // customers on both (prijsprofeet#1670). A language listed here needs a STRINGS
 // table, and the language switch appears on its own.
-const COUNTRIES = ['nl', 'be'];
-const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'de', 'en'] };
+const COUNTRIES = ['nl', 'be', 'de'];
+const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'de', 'en'], de: ['de', 'en'] };
 // Never picked from the browser: plenty of Dutch and Belgian visitors run an
 // English browser and read the consumer site in Dutch. English comes from the
 // switch or from a link (?taal=en, which the English API pages use).
@@ -41,7 +41,7 @@ const NOT_FROM_BROWSER = ['en'];
 // German pages fall back to French, like the German storefront reads the French
 // product names: in East Belgium French is read before Dutch (prijsprofeet#1697).
 const TITLE_FALLBACK = { de: 'fr' };
-const HOSTS = { nl: 'www.prijsprofeet.nl', be: 'www.prijsprofeet.be' };
+const HOSTS = { nl: 'www.prijsprofeet.nl', be: 'www.prijsprofeet.be', de: 'www.prijsprofeet.de' };
 // Rows shown to visitors, in this order. The API rows sit in the business block.
 const VISITOR_CHECKS = ['website', 'mcp'];
 const STORAGE_KEY = 'pp_status_choice';
@@ -58,6 +58,7 @@ const STRINGS = {
     choose_lang: 'Kies je taal',
     country_nl: 'Nederland',
     country_be: 'België',
+    country_de: 'Duitsland',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
     lang_de: 'Deutsch',
@@ -171,6 +172,7 @@ const STRINGS = {
     choose_lang: 'Choisissez votre langue',
     country_nl: 'Pays-Bas',
     country_be: 'Belgique',
+    country_de: 'Allemagne',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
     lang_de: 'Deutsch',
@@ -284,6 +286,7 @@ const STRINGS = {
     choose_lang: 'Wählen Sie Ihre Sprache',
     country_nl: 'Niederlande',
     country_be: 'Belgien',
+    country_de: 'Deutschland',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
     lang_de: 'Deutsch',
@@ -398,6 +401,7 @@ const STRINGS = {
     choose_lang: 'Choose your language',
     country_nl: 'Netherlands',
     country_be: 'Belgium',
+    country_de: 'Germany',
     lang_nl: 'Nederlands',
     lang_fr: 'Français',
     lang_de: 'Deutsch',
@@ -522,7 +526,7 @@ function initialChoice() {
   }
   const browser = navigator.languages || [navigator.language || ''];
   const country =
-    [params.get('land'), stored.country, browser.some((l) => /-be$/i.test(l)) ? 'be' : null].find((c) =>
+    [params.get('land'), stored.country, browser.some((l) => /-be$/i.test(l)) ? 'be' : null, browser.some((l) => /-de$/i.test(l)) ? 'de' : null].find((c) =>
       COUNTRIES.includes(c),
     ) || 'nl';
   const langs = LANGS[country];
@@ -1145,7 +1149,7 @@ function incidentTitle(incident) {
     const fallback = TITLE_FALLBACK[choice.lang];
     return incident[`title_${choice.lang}`] || (fallback && incident[`title_${fallback}`]) || incident.title;
   }
-  return t(`check_${incident.service.replace(/_be$/, '')}`);
+  return t(`check_${incident.service.replace(/_(be|de)$/, '')}`);
 }
 
 function renderIncidents(data) {

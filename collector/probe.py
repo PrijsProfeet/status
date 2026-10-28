@@ -96,11 +96,18 @@ STALL_THRESHOLD_MINUTES = 15
 SITES = [
     ("nl", "https://www.prijsprofeet.nl", ""),
     ("be", "https://www.prijsprofeet.be", "_be"),
+    # Zachte launch (prijsprofeet#1863): de site staat er, de ketens nog niet.
+    ("de", "https://www.prijsprofeet.de", "_de"),
 ]
+# Een winkel zonder MCP-connector (`Storefront.api_pages=False`: `/api/v1/mcp`
+# geeft er een 404). Die rij zou altijd "storing" zeggen.
+NO_MCP = {"de"}
 # Dutch names for the feed and the incident names. The page does not read
 # them: it names a country in the visitor's language (app.js, STRINGS).
-COUNTRY_NAMES = {"nl": "Nederland", "be": "België"}
-COUNTRY_NAMES_EN = {"nl": "Netherlands", "be": "Belgium"}
+COUNTRY_NAMES = {"nl": "Nederland", "be": "België", "de": "Duitsland"}
+COUNTRY_NAMES_EN = {"nl": "Netherlands", "be": "Belgium", "de": "Germany"}
+# De sleutel van een controle draagt het land als achtervoegsel (`api_be`).
+_HOST_SUFFIX = re.compile(r"_(be|de)$")
 
 # What status.json stores is a CODE, never a sentence: the page renders it in
 # the visitor's language (app.js, STRINGS.*.reason), and once the Belgian
@@ -589,7 +596,7 @@ def _update_service(
     service["name"] = name
     service["country"] = country
     # website / api / mcp: what the page names the row, in the visitor's language.
-    service["check"] = key.removesuffix("_be")
+    service["check"] = _HOST_SUFFIX.sub("", key)
     service["target"] = target
     service["status"] = "up" if result.ok else "down"
     service["reason"] = result.reason
@@ -780,14 +787,15 @@ def _incident_name(i: dict[str, Any], lang: str) -> str:
         return i["name"]
     # A check's key says its host too (`api_be`), for incidents from before
     # `country` was stored on them.
-    code = i.get("country") or ("be" if i["service"].endswith("_be") else "nl")
+    suffix = _HOST_SUFFIX.search(i["service"])
+    code = i.get("country") or (suffix.group(1) if suffix else "nl")
     country = COUNTRY_NAMES_EN.get(code)
     if i.get("kind") == "alert":
         base = i.get("title_en") or i["title"]
     elif i.get("kind") == "versheid":
         base = i.get("chain") or i["name"]
     else:
-        base = CHECK_NAMES_EN.get(i["service"].removesuffix("_be"), i["name"])
+        base = CHECK_NAMES_EN.get(_HOST_SUFFIX.sub("", i["service"]), i["name"])
     return f"{base} ({country})" if country else base
 
 
@@ -915,10 +923,11 @@ def main() -> int:
             data, "api" + suffix, "API", base_url + "/api/v1/ready",
             with_retry(check_api, base_url), country,
         )
-        _update_service(
-            data, "mcp" + suffix, "MCP-connector", base_url + MCP_PATH,
-            with_retry(check_mcp, base_url), country,
-        )
+        if country not in NO_MCP:
+            _update_service(
+                data, "mcp" + suffix, "MCP-connector", base_url + MCP_PATH,
+                with_retry(check_mcp, base_url), country,
+            )
 
     for country, base_url, _suffix in SITES:
         host = base_url.removeprefix("https://")
