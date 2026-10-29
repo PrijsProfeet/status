@@ -128,7 +128,38 @@
     "www.prijsprofeet.de": {
       "fresh_by": "07:00",
       "norm": 0.9,
-      "retailers": []
+      "retailers": [
+        {
+          "latest": null,
+          "months": [],
+          "name": "Aldi Nord",
+          "retailer": "aldi_nord"
+        },
+        {
+          "latest": null,
+          "months": [],
+          "name": "Penny",
+          "retailer": "penny"
+        },
+        {
+          "latest": null,
+          "months": [],
+          "name": "Aldi S\u00fcd",
+          "retailer": "aldi_sued"
+        },
+        {
+          "latest": null,
+          "months": [],
+          "name": "Kaufland",
+          "retailer": "kaufland"
+        },
+        {
+          "latest": null,
+          "months": [],
+          "name": "Lidl",
+          "retailer": "lidl_de"
+        }
+      ]
     },
     "www.prijsprofeet.nl": {
       "fresh_by": "07:00",
@@ -477,7 +508,7 @@
       ]
     }
   },
-  "generated_at": "2026-10-29T11:25:23.315392+00:00",
+  "generated_at": "2026-10-29T11:30:41.726099+00:00",
   "incidents": [
     {
       "chain": "Amazing Oriental",
@@ -883,10 +914,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:24.260035+00:00",
+      "last_checked": "2026-10-29T11:30:42.711665+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1099,10 +1130,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:25.214571+00:00",
+      "last_checked": "2026-10-29T11:30:44.651059+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1123,10 +1154,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:26.346757+00:00",
+      "last_checked": "2026-10-29T11:30:46.022902+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1219,10 +1250,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:24.454795+00:00",
+      "last_checked": "2026-10-29T11:30:43.204586+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1315,10 +1346,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:25.414654+00:00",
+      "last_checked": "2026-10-29T11:30:44.891727+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1615,10 +1646,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:23.856908+00:00",
+      "last_checked": "2026-10-29T11:30:42.467048+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1840,10 +1871,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:24.775674+00:00",
+      "last_checked": "2026-10-29T11:30:44.096848+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1864,10 +1895,10 @@
           "date": "2026-10-29",
           "failed_runs": 0,
           "first_failure": null,
-          "runs": 152
+          "runs": 153
         }
       ],
-      "last_checked": "2026-10-29T11:25:26.162140+00:00",
+      "last_checked": "2026-10-29T11:30:45.819761+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -1879,22 +1910,22 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.9995744215172481,
-          "availability_pct": 99.9574,
+          "availability": 0.9995745249875396,
+          "availability_pct": 99.9575,
           "closed": false,
           "downtime_minutes": 17.5,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-29T11:20:40.488724+00:00",
+          "measured_to": "2026-10-29T11:30:47.188868+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 29,
-            "expected": 82241,
-            "good": 82207,
+            "expected": 82261,
+            "good": 82228,
             "missing": 6
           },
           "step_seconds": 30,
@@ -2009,22 +2040,22 @@
       "host": "www.prijsprofeet.nl",
       "months": [
         {
-          "availability": 0.9997568122955703,
+          "availability": 0.9997568714214512,
           "availability_pct": 99.9757,
           "closed": false,
           "downtime_minutes": 10.0,
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-09-30T22:00:00+00:00",
-          "measured_to": "2026-10-29T11:20:38.591501+00:00",
+          "measured_to": "2026-10-29T11:30:46.170628+00:00",
           "met": true,
           "month": "2026-10",
           "partial": true,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 13,
-            "expected": 82241,
-            "good": 82221,
+            "expected": 82261,
+            "good": 82241,
             "missing": 7
           },
           "step_seconds": 30,
