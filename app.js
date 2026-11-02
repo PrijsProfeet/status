@@ -32,7 +32,10 @@ const STALE_AFTER_MINUTES = 20;
 // customers on both (prijsprofeet#1670). A language listed here needs a STRINGS
 // table, and the language switch appears on its own.
 const COUNTRIES = ['nl', 'be', 'de'];
-const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'de', 'en'], de: ['de', 'en'] };
+// The overview is a fourth choice, not a country: every storefront in one table,
+// for us and for customers who use more than one. It speaks every language.
+const OVERVIEW = 'all';
+const LANGS = { nl: ['nl', 'en'], be: ['nl', 'fr', 'de', 'en'], de: ['de', 'en'], [OVERVIEW]: ['nl', 'fr', 'de', 'en'] };
 // Never picked from the browser: plenty of Dutch and Belgian visitors run an
 // English browser and read the consumer site in Dutch. English comes from the
 // switch or from a link (?taal=en, which the English API pages use).
@@ -45,6 +48,8 @@ const HOSTS = { nl: 'www.prijsprofeet.nl', be: 'www.prijsprofeet.be', de: 'www.p
 // Rows shown to visitors, in this order. The API rows sit in the business block.
 const VISITOR_CHECKS = ['website', 'mcp'];
 const STORAGE_KEY = 'pp_status_choice';
+// Resolved "not fresh" incidents older than this leave the page (not the feed).
+const OLD_FRESHNESS_DAYS = 7;
 
 /* Every sentence on the page. Dutch is the source; a second language is a
  * second table with the same keys (a missing key falls back to Dutch). The
@@ -56,6 +61,7 @@ const STRINGS = {
     loading: 'Status laden…',
     choose_country: 'Kies je land',
     choose_lang: 'Kies je taal',
+    country_all: 'Overzicht',
     country_nl: 'Nederland',
     country_be: 'België',
     country_de: 'Duitsland',
@@ -131,6 +137,17 @@ const STRINGS = {
     fresh_not: ' Niet vers: {names}.',
     fresh_unmeasured: ' Nog geen meting: {names}.',
     fresh_details: 'Per keten en per maand',
+    overview_note:
+      'Alle landen naast elkaar. Klik op een land voor de details: de balken per dag, de versheid per keten en de API.',
+    col_country: 'Land',
+    col_fresh_now: 'Versheid',
+    col_sla_now: 'API deze maand',
+    col_sla_last: 'API vorige maand',
+    col_incidents: 'Incidenten',
+    incidents_none: 'geen',
+    incidents_open: (n) => `${n} lopend`,
+    fresh_count: '{fresh}/{total} vers',
+    no_connector: 'n.v.t.',
     col_chain: 'Keten',
     col_at_seven: 'Om 07:00',
     running: ' (loopt nog)',
@@ -170,6 +187,7 @@ const STRINGS = {
     loading: 'Chargement du statut…',
     choose_country: 'Choisissez votre pays',
     choose_lang: 'Choisissez votre langue',
+    country_all: 'Aperçu',
     country_nl: 'Pays-Bas',
     country_be: 'Belgique',
     country_de: 'Allemagne',
@@ -245,6 +263,17 @@ const STRINGS = {
     fresh_not: ' Pas à jour : {names}.',
     fresh_unmeasured: ' Pas encore de mesure : {names}.',
     fresh_details: 'Par chaîne et par mois',
+    overview_note:
+      'Tous les pays côte à côte. Cliquez sur un pays pour le détail : les barres par jour, la fraîcheur par chaîne et l’API.',
+    col_country: 'Pays',
+    col_fresh_now: 'Fraîcheur',
+    col_sla_now: 'API ce mois-ci',
+    col_sla_last: 'API le mois dernier',
+    col_incidents: 'Incidents',
+    incidents_none: 'aucun',
+    incidents_open: (n) => (n === 1 ? '1 en cours' : `${n} en cours`),
+    fresh_count: '{fresh}/{total} à jour',
+    no_connector: 's.o.',
     col_chain: 'Chaîne',
     col_at_seven: 'À 07h00',
     running: ' (en cours)',
@@ -284,6 +313,7 @@ const STRINGS = {
     loading: 'Status wird geladen…',
     choose_country: 'Wählen Sie Ihr Land',
     choose_lang: 'Wählen Sie Ihre Sprache',
+    country_all: 'Übersicht',
     country_nl: 'Niederlande',
     country_be: 'Belgien',
     country_de: 'Deutschland',
@@ -360,6 +390,17 @@ const STRINGS = {
     fresh_not: ' Nicht aktuell: {names}.',
     fresh_unmeasured: ' Noch keine Messung: {names}.',
     fresh_details: 'Pro Kette und pro Monat',
+    overview_note:
+      'Alle Länder nebeneinander. Klicken Sie auf ein Land für die Details: die Balken pro Tag, die Aktualität pro Kette und die API.',
+    col_country: 'Land',
+    col_fresh_now: 'Aktualität',
+    col_sla_now: 'API diesen Monat',
+    col_sla_last: 'API letzten Monat',
+    col_incidents: 'Störungen',
+    incidents_none: 'keine',
+    incidents_open: (n) => `${n} laufend`,
+    fresh_count: '{fresh}/{total} aktuell',
+    no_connector: 'entfällt',
     col_chain: 'Kette',
     col_at_seven: 'Um 07:00',
     running: ' (läuft noch)',
@@ -399,6 +440,7 @@ const STRINGS = {
     loading: 'Loading status…',
     choose_country: 'Choose your country',
     choose_lang: 'Choose your language',
+    country_all: 'Overview',
     country_nl: 'Netherlands',
     country_be: 'Belgium',
     country_de: 'Germany',
@@ -474,6 +516,17 @@ const STRINGS = {
     fresh_not: ' Not fresh: {names}.',
     fresh_unmeasured: ' Not measured yet: {names}.',
     fresh_details: 'Per chain and per month',
+    overview_note:
+      'All countries side by side. Click a country for the details: the bars per day, freshness per chain and the API.',
+    col_country: 'Country',
+    col_fresh_now: 'Freshness',
+    col_sla_now: 'API this month',
+    col_sla_last: 'API last month',
+    col_incidents: 'Incidents',
+    incidents_none: 'none',
+    incidents_open: (n) => `${n} ongoing`,
+    fresh_count: '{fresh}/{total} fresh',
+    no_connector: 'n/a',
     col_chain: 'Chain',
     col_at_seven: 'At 07:00',
     running: ' (running)',
@@ -527,7 +580,7 @@ function initialChoice() {
   const browser = navigator.languages || [navigator.language || ''];
   const country =
     [params.get('land'), stored.country, browser.some((l) => /-be$/i.test(l)) ? 'be' : null, browser.some((l) => /-de$/i.test(l)) ? 'de' : null].find((c) =>
-      COUNTRIES.includes(c),
+      c === OVERVIEW || COUNTRIES.includes(c),
     ) || 'nl';
   const langs = LANGS[country];
   const lang =
@@ -561,6 +614,7 @@ function choiceUrl(country, lang) {
 
 // nl-NL, nl-BE, later fr-BE: number and date formats follow the storefront.
 function locale() {
+  if (choice.country === OVERVIEW) return choice.lang;
   return `${choice.lang}-${choice.country.toUpperCase()}`;
 }
 
@@ -584,6 +638,7 @@ function t(key, vars) {
 
 function applyStaticText() {
   document.documentElement.lang = choice.lang;
+  document.body.dataset.view = choice.country === OVERVIEW ? 'overview' : 'country';
   document.querySelectorAll('[data-t]').forEach((node) => {
     node.textContent = t(node.dataset.t);
   });
@@ -599,7 +654,7 @@ function renderSwitches() {
   const countries = document.getElementById('country-switch');
   countries.setAttribute('aria-label', t('choose_country'));
   countries.replaceChildren(
-    ...COUNTRIES.map((c) =>
+    ...[OVERVIEW, ...COUNTRIES].map((c) =>
       switchLink(t(`country_${c}`), choiceUrl(c, choice.lang), c === choice.country, () => setChoice(c, choice.lang)),
     ),
   );
@@ -829,7 +884,7 @@ function renderService(key, service, incidents, label) {
 }
 
 function servicesOf(services, country) {
-  return Object.entries(services || {}).filter(([, s]) => s.country === country);
+  return Object.entries(services || {}).filter(([, s]) => country === OVERVIEW || s.country === country);
 }
 
 // An open alert incident (Prometheus, #954: slow API, failing requests, search
@@ -1137,13 +1192,18 @@ function renderNotices(notices) {
 }
 
 function incidentsOf(data, country) {
-  return (data.incidents || []).filter((i) => i.country === country);
+  return (data.incidents || []).filter((i) => country === OVERVIEW || i.country === country);
 }
 
 // What the page calls an incident, in the visitor's language. The stored
 // `name` is the feed's Dutch and is not read here. An alert carries the app's
 // own titles: French when the app sent one (prijsprofeet#1568), else Dutch.
 function incidentTitle(incident) {
+  const title = incidentName(incident);
+  return choice.country === OVERVIEW ? `${t(`country_${incident.country}`)} · ${title}` : title;
+}
+
+function incidentName(incident) {
   if (incident.kind === 'versheid') return t('not_fresh_incident', { chain: incident.chain });
   if (incident.kind === 'alert') {
     const fallback = TITLE_FALLBACK[choice.lang];
@@ -1154,7 +1214,12 @@ function incidentTitle(incident) {
 
 function renderIncidents(data) {
   const section = document.getElementById('incidents');
-  const list = incidentsOf(data, choice.country).slice(0, 20);
+  // A chain that was stale weeks ago drowned the outages that matter; the feed
+  // keeps them all. An open incident always shows.
+  const cutoff = Date.now() - OLD_FRESHNESS_DAYS * 86400000;
+  const list = incidentsOf(data, choice.country)
+    .filter((i) => i.resolved_at === null || i.kind !== 'versheid' || new Date(i.resolved_at) >= cutoff)
+    .slice(0, 20);
   section.hidden = !list.length;
   const ul = document.getElementById('incidents-list');
   ul.innerHTML = '';
@@ -1183,6 +1248,118 @@ function renderIncidents(data) {
   }
 }
 
+/* ---------- overview of all storefronts ---------- */
+
+function statusCell(row, statusKey, text) {
+  const cell = row.insertCell();
+  if (statusKey === null) {
+    cell.textContent = '—';
+    return cell;
+  }
+  cell.appendChild(el('span', 'service-status', text));
+  cell.firstChild.dataset.status = statusKey;
+  return cell;
+}
+
+// Fresh chains of the latest measured morning, as "20/20 vers"; red when one is not.
+function freshnessCounts(summary) {
+  const retailers = (summary && summary.retailers) || [];
+  const day = retailers.reduce((max, r) => (r.latest && (!max || r.latest.day > max) ? r.latest.day : max), null);
+  if (!day) return null;
+  const measured = retailers.filter((r) => r.latest && r.latest.day === day);
+  return { fresh: measured.filter((r) => r.latest.fresh).length, total: measured.length };
+}
+
+// The newest month with a measurement, and the newest closed one. A running
+// month shows its figure without a verdict, like the SLA table does.
+function slaFigure(month) {
+  if (!month || month.availability_pct == null) return null;
+  return month;
+}
+
+function renderOverview(data) {
+  const box = document.getElementById('overview');
+  if (choice.country !== OVERVIEW) {
+    box.replaceChildren();
+    return;
+  }
+  const table = el('table', 'sla-table overview-table');
+  const head = table.insertRow();
+  [
+    t('col_country'),
+    t('check_website'),
+    t('check_mcp'),
+    t('check_api'),
+    t('col_fresh_now'),
+    t('col_sla_now'),
+    t('col_sla_last'),
+    t('col_incidents'),
+  ].forEach((h) => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    head.appendChild(th);
+  });
+
+  for (const country of COUNTRIES) {
+    const row = table.insertRow();
+    const name = row.insertCell();
+    const link = el('a', null, t(`country_${country}`));
+    link.href = choiceUrl(country, choice.lang);
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      setChoice(country, choice.lang);
+    });
+    name.appendChild(link);
+
+    const services = servicesOf(data.services, country);
+    for (const check of ['website', 'mcp', 'api']) {
+      const found = services.find(([, s]) => s.check === check);
+      if (!found) {
+        // A storefront without the connector (.de): no row to be down.
+        const cell = row.insertCell();
+        cell.textContent = check === 'mcp' ? t('no_connector') : '—';
+        continue;
+      }
+      const key = serviceStatus(found[1]);
+      statusCell(row, key, t(`status.${key}`));
+    }
+
+    const counts = freshnessCounts((data.freshness || {})[HOSTS[country]]);
+    if (counts) {
+      const cell = statusCell(
+        row,
+        counts.fresh === counts.total ? 'up' : 'degraded',
+        t('fresh_count', { fresh: counts.fresh, total: counts.total }),
+      );
+      cell.title = t('freshness_title');
+    } else {
+      statusCell(row, null);
+    }
+
+    const months = (((data.sla || {})[HOSTS[country]] || {}).months || []).filter((m) => m.measured);
+    const running = slaFigure(months.find((m) => !m.closed));
+    const lastClosed = slaFigure(months.find((m) => m.closed));
+    for (const m of [running, lastClosed]) {
+      const cell = row.insertCell();
+      if (!m) {
+        cell.textContent = '—';
+        continue;
+      }
+      cell.textContent = `${number(m.availability_pct)}%`;
+      cell.title = monthLabel(m.month);
+      // Only a closed month has a verdict; a running one can still flip.
+      if (m.closed) cell.className = m.met ? 'met' : 'missed';
+    }
+
+    const open = incidentsOf(data, country).filter((i) => i.resolved_at === null).length;
+    const cell = row.insertCell();
+    cell.textContent = open ? t('incidents_open', open) : t('incidents_none');
+    if (open) cell.className = 'missed';
+  }
+
+  box.replaceChildren(el('p', 'sla-note', t('overview_note')), scrollable(table));
+}
+
 /* ---------- page ---------- */
 
 function renderData(data) {
@@ -1198,6 +1375,7 @@ function renderData(data) {
   renderIncidents(data);
   renderApiRows(data);
   renderSla(data.sla);
+  renderOverview(data);
 }
 
 /* Re-renders the "Bijgewerkt N geleden" line between polls, without a network
