@@ -304,3 +304,14 @@ a { color: inherit; }
 .business .panel { margin-top: 12px; }
 .business .other-hosts { margin-top: 16px; }
 .sla-title { font-size: 0.95rem; margin: 24px 0 4px; }
+
+/* ?land=all: one table for every storefront. The per-storefront sections stay
+   out of it; the overview stays out of theirs. */
+body[data-view="overview"] #services,
+body[data-view="overview"] #freshness,
+body[data-view="overview"] #business { display: none; }
+body[data-view="country"] #overview { display: none; }
+.overview { margin-bottom: 24px; }
+.overview-table th, .overview-table td { white-space: nowrap; }
+.overview-table a { font-weight: 600; }
+body[data-view="overview"] .wrap { max-width: 960px; }

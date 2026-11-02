@@ -1,7 +1,7 @@
 # PrijsProfeet Status
 
-External status page for prijsprofeet.nl and prijsprofeet.be — website and
-API — probed from
+External status page for prijsprofeet.nl, prijsprofeet.be and prijsprofeet.de —
+website, API and connector — probed from
 **outside** the box it reports on. See
 [prijsprofeet#841](https://github.com/PrijsProfeet/prijsprofeet/issues/841)
 for why: a status page hosted on the same infrastructure as the thing it
@@ -26,6 +26,11 @@ monitors answers "up" from inside the very outage it should report.
 - `.github/workflows/probe.yml` runs that script every 5 minutes (best
   effort — GitHub can delay a scheduled run under load) and commits the
   updated JSON straight to `main`.
+- `?land=all` is the overview: one table with every storefront (website,
+  connector, API, freshness of the latest morning, API availability this and
+  last month, open incidents), each country name linking to its own view. The
+  per-storefront sections are hidden there; the banner and the incident list
+  cover all countries. A new country needs no change: it joins `COUNTRIES`.
 - The page has two audiences. A visitor picks a storefront (`?land=nl` /
   `?land=be`, remembered in localStorage, `nl-BE`/`fr-BE`/`de-BE` browsers start on
   België) and sees only that one: website, the connector in Claude and
@@ -93,7 +98,7 @@ vers" on the first stale morning, "Weer vers" on the first fresh one. Both
 ends sit at 07:00 of the measured day. The probe only sees the latest day, so
 an incident that opens mid-streak (the first run, or after the probe was down)
 starts on the day it was first seen; correct it by hand in `data/status.json`
-from prod `freshness_days`. These incidents never turn the banner: our hosts
+from prod `freshness_days`. On the page, a resolved "not fresh" incident disappears after 7 days (`OLD_FRESHNESS_DAYS`); the feed keeps it. These incidents never turn the banner: our hosts
 answer, the data stands still.
 
 Notices are what the probe cannot see: planned maintenance, or a chain whose
