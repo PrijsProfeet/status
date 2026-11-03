@@ -251,6 +251,12 @@
           "retailer": "aldi_sued"
         },
         {
+          "latest": null,
+          "months": [],
+          "name": "Denns BioMarkt",
+          "retailer": "denns"
+        },
+        {
           "latest": {
             "day": "2026-11-03",
             "fresh": true
@@ -787,7 +793,7 @@
       ]
     }
   },
-  "generated_at": "2026-11-03T12:55:21.605172+00:00",
+  "generated_at": "2026-11-03T13:00:48.913762+00:00",
   "incidents": [
     {
       "country": "nl",
@@ -1258,10 +1264,10 @@
             "reason": "timeout",
             "time": "2026-11-03T03:57:31.142406+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:22.319345+00:00",
+      "last_checked": "2026-11-03T13:00:49.784113+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1507,10 +1513,10 @@
             "reason": "timeout",
             "time": "2026-11-03T03:43:04.983927+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:23.929962+00:00",
+      "last_checked": "2026-11-03T13:00:51.277625+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1567,10 +1573,10 @@
             "reason": "timeout",
             "time": "2026-11-03T03:44:40.844480+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:25.714600+00:00",
+      "last_checked": "2026-11-03T13:00:54.076878+00:00",
       "name": "API",
       "reason": "ok",
       "status": "up",
@@ -1696,10 +1702,10 @@
             "reason": "timeout",
             "time": "2026-11-03T05:06:33.159980+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:22.779760+00:00",
+      "last_checked": "2026-11-03T13:00:50.046042+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -1825,10 +1831,10 @@
             "reason": "timeout",
             "time": "2026-11-03T04:13:55.909343+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:24.375153+00:00",
+      "last_checked": "2026-11-03T13:00:51.934734+00:00",
       "name": "MCP-connector",
       "reason": "ok",
       "status": "up",
@@ -2128,10 +2134,10 @@
             "reason": "timeout",
             "time": "2026-11-03T04:11:55.634603+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:22.158578+00:00",
+      "last_checked": "2026-11-03T13:00:49.398306+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -2386,10 +2392,10 @@
             "reason": "timeout",
             "time": "2026-11-03T04:47:19.867311+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:23.520303+00:00",
+      "last_checked": "2026-11-03T13:00:51.019412+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -2446,10 +2452,10 @@
             "reason": "timeout",
             "time": "2026-11-03T03:44:05.787055+00:00"
           },
-          "runs": 159
+          "runs": 160
         }
       ],
-      "last_checked": "2026-11-03T12:55:25.163122+00:00",
+      "last_checked": "2026-11-03T13:00:53.210549+00:00",
       "name": "Website",
       "reason": "ok",
       "status": "up",
@@ -2461,22 +2467,22 @@
       "host": "www.prijsprofeet.be",
       "months": [
         {
-          "availability": 0.9990567308988006,
-          "availability_pct": 99.9057,
+          "availability": 0.9990592662276576,
+          "availability_pct": 99.9059,
           "closed": false,
           "downtime_minutes": 3.5,
           "host": "www.prijsprofeet.be",
           "measured": true,
           "measured_from": "2026-10-31T23:00:00+00:00",
-          "measured_to": "2026-11-03T12:50:32.233450+00:00",
+          "measured_to": "2026-11-03T13:00:55.513363+00:00",
           "met": true,
           "month": "2026-11",
           "partial": true,
           "probe": "https://www.prijsprofeet.be/api/v1/ready",
           "samples": {
             "bad": 7,
-            "expected": 7421,
-            "good": 7414,
+            "expected": 7441,
+            "good": 7435,
             "missing": 0
           },
           "step_seconds": 30,
@@ -2612,15 +2618,15 @@
           "host": "www.prijsprofeet.nl",
           "measured": true,
           "measured_from": "2026-10-31T23:00:00+00:00",
-          "measured_to": "2026-11-03T12:50:31.648750+00:00",
+          "measured_to": "2026-11-03T13:00:54.206166+00:00",
           "met": true,
           "month": "2026-11",
           "partial": true,
           "probe": "https://www.prijsprofeet.nl/api/v1/ready",
           "samples": {
             "bad": 0,
-            "expected": 7421,
-            "good": 7421,
+            "expected": 7441,
+            "good": 7441,
             "missing": 0
           },
           "step_seconds": 30,
