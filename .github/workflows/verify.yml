@@ -1,0 +1,22 @@
+name: verify
+
+# Pull requests get no other check: probe.yml runs only on its schedule and on
+# pushes to main. Same zero-dependency tools as the page and the probe.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax-check the page script
+        run: node --check app.js
+
+      - name: Test the probe (also validates notices.json)
+        run: python3 -m unittest test_probe
+        working-directory: collector
