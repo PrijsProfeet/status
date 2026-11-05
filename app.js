@@ -1116,8 +1116,9 @@ function renderFreshnessTable(summary) {
         continue;
       }
       cell.textContent = `${pct(m.ratio)} (${m.fresh_nights}/${m.nights})`;
-      // Same rule as the SLA: a running month has no verdict yet.
-      if (month !== current) cell.className = m.meets_norm ? 'met' : 'missed';
+      // Colour goes where it can still change: the running month shows its
+      // standing against the norm so far; a closed month is history, in grey.
+      cell.className = month === current ? (m.meets_norm ? 'met' : 'missed') : 'closed';
     }
   }
   return table;
