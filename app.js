@@ -1220,6 +1220,15 @@ function renderIncidents(data) {
   const cutoff = Date.now() - OLD_FRESHNESS_DAYS * 86400000;
   const list = incidentsOf(data, choice.country)
     .filter((i) => i.resolved_at === null || i.kind !== 'versheid' || new Date(i.resolved_at) >= cutoff)
+    // Open first, then newest. status.json is sorted by start alone, so an
+    // incident that is still open but started days ago sat between resolved
+    // ones and read as history -- seen 2026-11-19, with Denns BioMarkt stale
+    // since the 18th below three chains that had recovered, so the page looked
+    // like it held four open incidents instead of five. Same rule the probe
+    // already follows when it prunes: an open incident never drops out of
+    // sight. Sorting is stable, so each group keeps the newest-first order,
+    // and the cap below can no longer cut an open incident off.
+    .sort((a, b) => (a.resolved_at === null ? 0 : 1) - (b.resolved_at === null ? 0 : 1))
     .slice(0, 20);
   section.hidden = !list.length;
   const ul = document.getElementById('incidents-list');
