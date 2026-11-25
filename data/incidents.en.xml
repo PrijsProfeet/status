@@ -2,12 +2,20 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <id>https://status.prijsprofeet.nl/data/incidents.en.xml</id>
   <title>PrijsProfeet status: outages and notices</title>
-  <updated>2026-11-23T06:00:00+00:00</updated>
+  <updated>2026-11-25T06:00:00+00:00</updated>
   <link rel="self" href="https://status.prijsprofeet.nl/data/incidents.en.xml" />
   <link rel="alternate" href="https://status.prijsprofeet.nl/?taal=en" />
   <author>
     <name>PrijsProfeet</name>
   </author>
+  <entry>
+    <id>tag:status.prijsprofeet.nl,2026:incident:versheid:plus:www.prijsprofeet.nl:2026-11-25T06:00:00+00:00:begin</id>
+    <title>Not fresh: PLUS (Netherlands)</title>
+    <updated>2026-11-25T06:00:00+00:00</updated>
+    <published>2026-11-25T06:00:00+00:00</published>
+    <link rel="alternate" href="https://status.prijsprofeet.nl/?taal=en" />
+    <content type="text">At 25 November 07:00 this chain's data had not been updated. Until it is fresh again, its prices may be out of date.</content>
+  </entry>
   <entry>
     <id>tag:status.prijsprofeet.nl,2026:incident:versheid:netto_de:www.prijsprofeet.de:2026-11-22T06:00:00+00:00:einde</id>
     <title>Fresh again: Netto (Scottie) (Germany)</title>
@@ -397,14 +405,6 @@
     <title>Outage: API (Germany)</title>
     <updated>2026-11-03T03:44:40.844480+00:00</updated>
     <published>2026-11-03T03:44:40.844480+00:00</published>
-    <link rel="alternate" href="https://status.prijsprofeet.nl/?taal=en" />
-    <content type="text">Started 3 November 04:44. Cause according to the check: unreachable: timeout.</content>
-  </entry>
-  <entry>
-    <id>tag:status.prijsprofeet.nl,2026:incident:website_de:2026-11-03T03:44:05.787055+00:00:begin</id>
-    <title>Outage: Website (Germany)</title>
-    <updated>2026-11-03T03:44:05.787055+00:00</updated>
-    <published>2026-11-03T03:44:05.787055+00:00</published>
     <link rel="alternate" href="https://status.prijsprofeet.nl/?taal=en" />
     <content type="text">Started 3 November 04:44. Cause according to the check: unreachable: timeout.</content>
   </entry>
